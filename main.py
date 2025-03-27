@@ -146,7 +146,7 @@ while running:
         player_vel[1] = player_jump
         on_ground = False
 
-    # AI Movement
+    # Bot Movement
     if ball_pos[0] > enemy_pos[0] + 10 and enemy_pos[0] + enemy_radius < WIDTH:
         enemy_pos[0] += enemy_speed
     elif ball_pos[0] < enemy_pos[0] - 10 and enemy_pos[0] - enemy_radius > 0:
