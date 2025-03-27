@@ -1,6 +1,8 @@
 import pygame
 import sys
 import math
+import random  
+
 
 # Init
 pygame.init()
@@ -19,12 +21,21 @@ GREEN = (50, 255, 50)
 GROUND_Y = HEIGHT - 30
 
 font = pygame.font.SysFont("Arial", 30)
+goal_font = pygame.font.SysFont("Arial", 100, bold=True)
+
 
 # Game State
 gravity = 0.5
-bounciness = -0.7
+bounciness = -0.8
 score_left = 0
 score_right = 0
+goal_scored = False
+goal_time = 0
+GOAL_PAUSE_DURATION = 2000  # milliseconds
+goal_text_x = -200  # Start off-screen
+goal_text_speed = 20
+
+
 
 # Ball settings
 ball_radius = 30
@@ -39,13 +50,13 @@ player_jump = -10
 player_speed = 6
 on_ground = True
 
-# Enemy AI settings
+# Enemy bot settings
 enemy_radius = 30
 enemy_pos = [3 * WIDTH // 4, GROUND_Y - enemy_radius]
 enemy_vel = [0, 0]
 enemy_jump = -10
-enemy_speed = 4
-enemy_on_ground = True
+enemy_speed = 10
+enemy_on_ground = False
 
 # Goal dimensions
 goal_width = 100
@@ -126,7 +137,7 @@ while running:
 
     keys = pygame.key.get_pressed()
 
-    # --- Player Movement ---
+    # Player Movement
     if keys[pygame.K_a] and player_pos[0] - player_radius > 0:
         player_pos[0] -= player_speed
     if keys[pygame.K_d] and player_pos[0] + player_radius < WIDTH:
@@ -135,7 +146,7 @@ while running:
         player_vel[1] = player_jump
         on_ground = False
 
-    # --- AI Movement ---
+    # AI Movement
     if ball_pos[0] > enemy_pos[0] + 10 and enemy_pos[0] + enemy_radius < WIDTH:
         enemy_pos[0] += enemy_speed
     elif ball_pos[0] < enemy_pos[0] - 10 and enemy_pos[0] - enemy_radius > 0:
@@ -145,7 +156,7 @@ while running:
         enemy_vel[1] = enemy_jump
         enemy_on_ground = False
 
-    # --- Apply Gravity & Movement ---
+    # Apply Gravity & Movement
     for pos, vel, radius in [(player_pos, player_vel, player_radius), (enemy_pos, enemy_vel, enemy_radius)]:
         vel[1] += gravity
         pos[1] += vel[1]
@@ -172,15 +183,16 @@ while running:
     player_pos[0] = max(player_radius, min(WIDTH - player_radius, player_pos[0]))
     enemy_pos[0] = max(enemy_radius, min(WIDTH - enemy_radius, enemy_pos[0]))
 
-    # --- Collisions ---
+    # Collisions
     resolve_circle_collision(ball_pos, ball_vel, ball_radius, player_pos, player_vel, player_radius, keys[pygame.K_k])
     resolve_circle_collision(ball_pos, ball_vel, ball_radius, enemy_pos, enemy_vel, enemy_radius, kick=True)
     # Prevent player and enemy from overlapping
     resolve_circle_collision(player_pos, player_vel, player_radius, enemy_pos, enemy_vel, enemy_radius)
 
 
-    # --- Bounce off bar or post ---
+    #Bounce off bar or post 
     ball_rect = pygame.Rect(ball_pos[0] - ball_radius, ball_pos[1] - ball_radius, ball_radius * 2, ball_radius * 2)
+
     # Realistic bar collision
     resolve_circle_rect_collision(ball_pos, ball_vel, ball_radius, left_bar)
     resolve_circle_rect_collision(ball_pos, ball_vel, ball_radius, right_bar)
@@ -188,28 +200,47 @@ while running:
     resolve_circle_rect_collision(enemy_pos, enemy_vel, enemy_radius, left_bar)
     resolve_circle_rect_collision(player_pos, player_vel, player_radius, right_bar)
     resolve_circle_rect_collision(enemy_pos, enemy_vel, enemy_radius, right_bar)
-
-
-
-
     resolve_circle_rect_collision(ball_pos, ball_vel, ball_radius, left_post)
     resolve_circle_rect_collision(ball_pos, ball_vel, ball_radius, right_post)
 
-
-    # --- Goal Detection: Only below bar counts ---
+    # Goal Detection
     ball_top = ball_pos[1] - ball_radius
     bar_limit_y = GROUND_Y - goal_height + goal_bar_thickness
 
-    if left_goal_zone.contains(ball_rect):
-        score_right += 1
-        reset_ball()
+    current_time = pygame.time.get_ticks()
 
-    elif right_goal_zone.contains(ball_rect):
-        score_left += 1
-        reset_ball()
+    if not goal_scored:
+        if left_goal_zone.contains(ball_rect):
+            score_right += 1
+            goal_scored = True
+            goal_time = current_time
+            goal_text_x = -200  # Reset text position
+
+        elif right_goal_zone.contains(ball_rect):
+            score_left += 1
+            goal_scored = True
+            goal_time = current_time
+            goal_text_x = -200  # Reset text position
+
+    # Animate goal text
+    if goal_scored:
+        goal_text_x += goal_text_speed
+
+        # Inside your main loop, during goal_scored:
+        shake_offset_x = random.randint(-5, 5)
+        shake_offset_y = random.randint(-5, 5)
+
+        goal_display = goal_font.render("GOAL!", True, (255, 215, 0))
+        screen.blit(goal_display, (goal_text_x + shake_offset_x, 60 + shake_offset_y))
 
 
-    # --- Draw Everything ---
+        # After 2 seconds, reset ball
+        if current_time - goal_time >= GOAL_PAUSE_DURATION:
+            reset_ball()
+            goal_scored = False
+
+
+    # Draw Everything
     pygame.draw.line(screen, WHITE, (0, GROUND_Y), (WIDTH, GROUND_Y), 2)
 
     pygame.draw.rect(screen, GREEN, left_post)
