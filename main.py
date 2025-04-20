@@ -25,7 +25,8 @@ while running:
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             running = False
 
-    class CharacterAnimation:
+#Start from here
+class CharacterAnimation:
     def __init__(self, idle_frames, run_frames, kick_frames, jump_frames):
         def load_images(frame_list, resize=(IMAGE_WIDTH, IMAGE_HEIGHT)):
             loaded_images = []
@@ -56,9 +57,11 @@ while running:
         self.jump_speed = 10
         self.gravity = 2
         self.is_flipped = False  # Track direction
+        self.position_x = 300  # Initial x position
+        self.move_speed = 5  # Movement speed
 
-    def update(self):
-        """Update animation frames and handle jump physics."""
+    def update(self, keys_pressed):
+        """Update animation frames, handle jump physics, and process movement."""
         self.frame_counter += 1
         if self.frame_counter >= self.frame_delay:
             self.frame_counter = 0
@@ -77,6 +80,17 @@ while running:
                 self.jump_height = 0
                 self.is_grounded = True  # Landed on the ground
 
+        # Handle movement (left and right)
+        if pygame.K_a in keys_pressed:
+            self.position_x -= self.move_speed
+            self.is_flipped = True
+        if pygame.K_d in keys_pressed:
+            self.position_x += self.move_speed
+            self.is_flipped = False
+
+        # Ensure the character stays within screen bounds
+        self.position_x = max(0, min(WIDTH - IMAGE_WIDTH, self.position_x))
+
     def set_animation(self, action):
         """Switch animation based on action."""
         if action == "idle":
@@ -92,34 +106,34 @@ while running:
 
         self.frame_index = 0  # Reset frame index to avoid out-of-range error
 
-    def draw(self, surface, x, y):
+    def draw(self, surface, y):
         """Draw the character, adjusting position for jump height and flipping if needed."""
         img = self.current_animation[self.frame_index]
         if self.is_flipped:
             img = pygame.transform.flip(img, True, False)  # Flip horizontally
-        surface.blit(img, (x, y - self.jump_height))
+        surface.blit(img, (self.position_x, y - self.jump_height))  # Use position_x
 
 
 class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Character Animation Example")
-        
+
         # Get the user directory dynamically
         user_directory = os.path.expanduser("~")
-        
+
         # Construct paths dynamically
-        self.idle_frames = [os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)', 
+        self.idle_frames = [os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)',
                                          'Desktop', 'ISE', 'ISE assignment', 'character', 'idle', f'Idle A-{str(i).zfill(2)}.png') for i in range(1, 7)]
-        self.run_frames = [os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)', 
+        self.run_frames = [os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)',
                                         'Desktop', 'ISE', 'ISE assignment', 'character', 'Run', f'Run A-{str(i).zfill(2)}.png') for i in range(1, 9)]
         self.kick_frames = [
-            os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)', 
+            os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)',
                          'Desktop', 'ISE', 'ISE assignment', 'character', 'kick', 'Attack A-03.png'),
-            os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)', 
+            os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)',
                          'Desktop', 'ISE', 'ISE assignment', 'character', 'kick', 'Attack A-04.png')
         ]
-        self.jump_frames = [os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)', 
+        self.jump_frames = [os.path.join(user_directory, 'OneDrive - Asia Pacific University of Technology And Innovation (APU)',
                                          'Desktop', 'ISE', 'ISE assignment', 'character', 'jump', f'Jump A-{str(i).zfill(2)}.png') for i in range(1, 11)]
 
         # Create character animation object
@@ -139,12 +153,8 @@ class Game:
                 elif event.key == pygame.K_SPACE:  # Press 'J' to jump (only if on ground)
                     if self.character.is_grounded:
                         self.current_action = "jump"  # Set current_action to "jump"
-                elif event.key == pygame.K_d:  # Press 'D' to run
+                elif event.key in [pygame.K_d, pygame.K_a]:  # Press 'D' or 'A' to run
                     self.current_action = "run"
-                    self.character.is_flipped = False  # Face right
-                elif event.key == pygame.K_a:  # Press 'A' to run left
-                    self.current_action = "run"
-                    self.character.is_flipped = True  # Face left
                 self.character.set_animation(self.current_action)
             elif event.type == pygame.KEYUP:
                 self.keys_pressed.discard(event.key)
@@ -157,12 +167,12 @@ class Game:
 
     def update(self):
         """Update the game state (animations, physics)."""
-        self.character.update()
+        self.character.update(self.keys_pressed)
 
     def draw(self):
-        """Draw everything on the screen.""" 
+        """Draw everything on the screen."""
         self.screen.fill((30, 30, 30))  # Background color
-        self.character.draw(self.screen, 300, 300)  # Draw the character
+        self.character.draw(self.screen, 300)  # Draw the character
         pygame.display.update()  # Update the display
 
     def run(self):
