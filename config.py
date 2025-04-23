@@ -8,6 +8,9 @@ FPS = 60
 # Colors
 WHITE = (255, 255, 255)
 
-
 # Controls
 CONTROL_KEYS = {"left": pygame.K_a, "right": pygame.K_d, "jump": pygame.K_SPACE}
+
+# Physics
+gravity = 0.5
+bounciness = -0.85

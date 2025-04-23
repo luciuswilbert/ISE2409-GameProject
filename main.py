@@ -2,6 +2,7 @@ import pygame
 import sys
 
 from config import *
+from ball import Ball
 
 # Initialize Pygame
 pygame.init()
@@ -12,7 +13,7 @@ pygame.display.set_caption("Simple Soccer Game")
 clock = pygame.time.Clock()
 
 # Game elements (create objects)
-
+ball = Ball();
 
 # Game loop
 running = True
@@ -37,7 +38,7 @@ while running:
     
     
     # Update game state for ball
-    
+    ball.update()  # Pass an empty list for goal_rects since we don't have any goals yet
     
     # Handle collisions after all positions are updated
 
@@ -49,7 +50,7 @@ while running:
 
 
     # Draw game elements
-
+    ball.draw(screen)
 
     # Update display
     pygame.display.flip()
