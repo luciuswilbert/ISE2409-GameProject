@@ -1,6 +1,7 @@
 import pygame
 from config import WIDTH, HEIGHT, GROUND_Y, gravity, bounciness
 import math
+from collision import resolve_ball_obj_collision, resolve_ball_player_collision
 
 GROUND_Y = HEIGHT - 30
 
@@ -32,8 +33,7 @@ class Ball:
         self.original_image = pygame.transform.scale(self.original_image, (self.radius * 2, self.radius * 2))
         self.image = self.original_image  # Will be rotated later
 
-    # def update(self, goal_rects):
-    def update(self):
+    def update(self, rects, player_objects):
         self.vel[1] += gravity
         self.pos[0] += self.vel[0]
         self.pos[1] += self.vel[1]
@@ -48,8 +48,15 @@ class Ball:
         if self.pos[0] <= self.radius or self.pos[0] >= WIDTH - self.radius:
             self.vel[0] *= -1
             
-        # for rect in goal_rects:
-        #     resolve_circle_rect_collision(self.pos, self.vel, self.radius, rect)
+        # for rect in rects:
+        #     resolve_ball_obj_collision(self.pos, self.vel, self.radius, rect)
+        for rect, color in rects:
+            resolve_ball_obj_collision(self.pos, self.vel, self.radius, rect, bounce_factor=0.8)  # Adjust bounce factor for walls
+            
+        # Handle collisions with players
+        for player in player_objects:  # player_objects is a list of Player instances
+            player_rect = player.rect  # Access the player's rectangle
+            resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, bounce_factor=1)  # Correcting the call
         
         # Simulate rotational friction and update angle
         self.rotation_speed = self.vel[0] * 2
