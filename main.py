@@ -8,7 +8,7 @@ pygame.init()
 
 # Game Constants
 TOTAL_TIME = 60  # seconds
-football_net = pygame.image.load("9-99121_soccer-goal-clipart-removebg-preview.png")
+football_net = pygame.image.load("images/goal/9-99121_soccer-goal-clipart-removebg-preview.png")
 
 
 class CharacterAnimation:
@@ -112,14 +112,14 @@ class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode((800, 600), pygame.FULLSCREEN)
         pygame.display.set_caption("Simple Soccer Game")
-        self.football_net_img = pygame.image.load("9-99121_soccer-goal-clipart-removebg-preview.png")
+        self.football_net_img = pygame.image.load("images/goal/9-99121_soccer-goal-clipart-removebg-preview.png")
         self.football_net_img = pygame.transform.scale(self.football_net_img, (200, 200))
 
         self.left_net_rect = pygame.Rect(0, 350, 200, 200)     # Left side
         self.right_net_rect = pygame.Rect(600, 350, 200, 200)  # Right side
 
          # Load football
-        self.football_img = pygame.image.load("foodballpng-removebg-preview.png")
+        self.football_img = pygame.image.load("images/ball/foodballpng-removebg-preview.png")
         self.football_img = pygame.transform.scale(self.football_img, (50, 50))
         self.football_pos = [400, 400]
         self.football_velocity = 0  # 0 means stationary
@@ -131,7 +131,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         # Load background image and scale
-        self.background_img_raw = pygame.image.load("fire_animatiaon.gif")
+        self.background_img_raw = pygame.image.load("images/background/fire_animatiaon.gif")
         self.background_img = pygame.transform.scale(self.background_img_raw, (800, 600))
 
             # Load font and setup timer
@@ -142,10 +142,10 @@ class Game:
             # Load character animations
         base_path = "images" 
 
-        self.idle_frames = [f'images/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
-        self.run_frames = [f'images/Run A-{str(i).zfill(2)}.png' for i in range(1, 9)]
-        self.kick_frames = ['images/Attack A-03.png', 'images/Attack A-04.png' ]
-        self.jump_frames = [f'images/Jump A-{str(i).zfill(2)}.png' for i in range(1, 11)]
+        self.idle_frames = [f'images/player/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
+        self.run_frames = [f'images/player/Run A-{str(i).zfill(2)}.png' for i in range(1, 9)]
+        self.kick_frames = ['images/player/Attack A-03.png', 'images/player/Attack A-04.png' ]
+        self.jump_frames = [f'images/player/Jump A-{str(i).zfill(2)}.png' for i in range(1, 11)]
 
         self.character = CharacterAnimation(self.idle_frames, self.run_frames, self.kick_frames, self.jump_frames)
         self.current_action = "idle"
