@@ -8,7 +8,7 @@ pygame.init()
 
 # Game Constants
 TOTAL_TIME = 60  # seconds
-football_net = pygame.image.load(r"C:\Users\xiuzh\OneDrive - Asia Pacific University\Degree Y2S2\ISE\Assingment\Assingment\9-99121_soccer-goal-clipart-removebg-preview.png")
+football_net = pygame.image.load("9-99121_soccer-goal-clipart-removebg-preview.png")
 
 
 class CharacterAnimation:
@@ -112,18 +112,14 @@ class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode((800, 600), pygame.FULLSCREEN)
         pygame.display.set_caption("Simple Soccer Game")
-        self.football_net_img = pygame.image.load(
-            r"C:\Users\xiuzh\OneDrive - Asia Pacific University\Degree Y2S2\ISE\Assingment\Assingment\9-99121_soccer-goal-clipart-removebg-preview.png"
-        )
+        self.football_net_img = pygame.image.load("9-99121_soccer-goal-clipart-removebg-preview.png")
         self.football_net_img = pygame.transform.scale(self.football_net_img, (200, 200))
 
         self.left_net_rect = pygame.Rect(0, 350, 200, 200)     # Left side
         self.right_net_rect = pygame.Rect(600, 350, 200, 200)  # Right side
 
          # Load football
-        self.football_img = pygame.image.load(
-            r"C:\Users\xiuzh\OneDrive - Asia Pacific University\Degree Y2S2\ISE\Assingment\Assingment\foodballpng-removebg-preview.png"
-        )
+        self.football_img = pygame.image.load("foodballpng-removebg-preview.png")
         self.football_img = pygame.transform.scale(self.football_img, (50, 50))
         self.football_pos = [400, 400]
         self.football_velocity = 0  # 0 means stationary
@@ -135,9 +131,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         # Load background image and scale
-        self.background_img_raw = pygame.image.load(
-            r"C:\Users\xiuzh\OneDrive - Asia Pacific University\Degree Y2S2\ISE\Assingment\Assingment\fire_animatiaon.gif"
-            )
+        self.background_img_raw = pygame.image.load("fire_animatiaon.gif")
         self.background_img = pygame.transform.scale(self.background_img_raw, (800, 600))
 
             # Load font and setup timer
