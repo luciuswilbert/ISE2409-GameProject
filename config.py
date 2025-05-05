@@ -11,3 +11,6 @@ WHITE = (255, 255, 255)
 
 # Controls
 CONTROL_KEYS = {"left": pygame.K_a, "right": pygame.K_d, "jump": pygame.K_SPACE}
+
+# Total Game Time
+TOTAL_TIME = 60  # seconds
