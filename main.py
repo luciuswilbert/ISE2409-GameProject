@@ -140,16 +140,12 @@ class Game:
         self.font = pygame.font.Font(None, 36)
 
             # Load character animations
-        user_directory = os.path.expanduser("~")
-        base_path = r"C:\Users\xiuzh\OneDrive - Asia Pacific University\Degree Y2S2\ISE\Assingment\Assingment\character"
+        base_path = "images" 
 
-        self.idle_frames = [os.path.join(base_path, 'idle', f'Idle A-{str(i).zfill(2)}.png') for i in range(1, 7)]
-        self.run_frames = [os.path.join(base_path, 'Run', f'Run A-{str(i).zfill(2)}.png') for i in range(1, 9)]
-        self.kick_frames = [
-            os.path.join(base_path, 'kick', 'Attack A-03.png'),
-            os.path.join(base_path, 'kick', 'Attack A-04.png')
-            ]
-        self.jump_frames = [os.path.join(base_path, 'jump', f'Jump A-{str(i).zfill(2)}.png') for i in range(1, 11)]
+        self.idle_frames = [f'images/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
+        self.run_frames = [f'images/Run A-{str(i).zfill(2)}.png' for i in range(1, 9)]
+        self.kick_frames = ['images/Attack A-03.png', 'images/Attack A-04.png' ]
+        self.jump_frames = [f'images/Jump A-{str(i).zfill(2)}.png' for i in range(1, 11)]
 
         self.character = CharacterAnimation(self.idle_frames, self.run_frames, self.kick_frames, self.jump_frames)
         self.current_action = "idle"
