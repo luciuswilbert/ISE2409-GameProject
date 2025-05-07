@@ -15,7 +15,7 @@ class Game:
         self.right_net_rect = pygame.Rect(600, 350, 200, 200)  # Right side
 
          # Load football
-        self.football_img = pygame.image.load("images/ball/foodballpng-removebg-preview.png")
+        self.football_img = pygame.image.load("images/ball/ball.png")
         self.football_img = pygame.transform.scale(self.football_img, (50, 50))
         self.football_pos = [400, 400]
         self.football_velocity = 0  # 0 means stationary
@@ -30,13 +30,10 @@ class Game:
         self.background_img_raw = pygame.image.load("images/background/fire_animatiaon.gif")
         self.background_img = pygame.transform.scale(self.background_img_raw, (800, 600))
 
-            # Load font and setup timer
+        # Load font and setup timer
         self.start_time = time.time()
         self.total_time = TOTAL_TIME
         self.font = pygame.font.Font(None, 36)
-
-            # Load character animations
-        base_path = "images" 
 
         self.idle_frames = [f'images/player/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
         self.run_frames = [f'images/player/Run A-{str(i).zfill(2)}.png' for i in range(1, 9)]
@@ -96,21 +93,20 @@ class Game:
                 self.ball_last_kicked_by_character = True
 
 
-
         
-        # Move ball if it has velocity
-        if abs(self.football_velocity) > 0:
-            self.football_pos[0] += self.football_velocity
+        # # Move ball if it has velocity
+        # if abs(self.football_velocity) > 0:
+        #     self.football_pos[0] += self.football_velocity
 
-            # Add basic friction
-            if self.football_velocity > 0:
-                self.football_velocity -= 0.2
-                if self.football_velocity < 0:
-                    self.football_velocity = 0
-            elif self.football_velocity < 0:
-                self.football_velocity += 0.2
-                if self.football_velocity > 0:
-                    self.football_velocity = 0
+        #     # Add basic friction
+        #     if self.football_velocity > 0:
+        #         self.football_velocity -= 0.2
+        #         if self.football_velocity < 0:
+        #             self.football_velocity = 0
+        #     elif self.football_velocity < 0:
+        #         self.football_velocity += 0.2
+        #         if self.football_velocity > 0:
+        #             self.football_velocity = 0
             # Stop ball if it goes out of bounds
             if self.left_net_rect.contains(football_rect) or self.right_net_rect.contains(football_rect):
                if self.ball_last_kicked_by_character and not self.celebrating:
@@ -177,10 +173,10 @@ class Game:
             return  # Skip rest of the draw logic
         pygame.display.update()
  
-    def run(self):
-        running = True
-        while running:
-            running = self.handle_events()  # Handle events and user input
-            self.update()  # Update game state
-            self.draw()  # Draw game elements
-            self.clock.tick(60)
+    # def run(self):
+    #     running = True
+    #     while running:
+    #         running = self.handle_events()  # Handle events and user input
+    #         self.update()  # Update game state
+    #         self.draw()  # Draw game elements
+    #         self.clock.tick(60)

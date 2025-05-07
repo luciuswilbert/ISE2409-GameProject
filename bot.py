@@ -1,7 +1,9 @@
+
 import pygame
 from config import *
+import random
 
-class CharacterAnimation:
+class Bot:
     def __init__(self):
         def load_images(frame_list, resize=(150, 200)):
             loaded_images = []
@@ -38,7 +40,7 @@ class CharacterAnimation:
         self.jump_speed = 10
         self.fall_speed = 0
         self.is_flipped = False  # Track direction
-        self.position_x = 100  # Initial x position
+        self.position_x = 700  # Initial x position
         self.position_y = GROUND_Y  # initial vertical position
         self.move_speed = 5  # Movement speed
         self.rect = pygame.Rect(
@@ -46,15 +48,9 @@ class CharacterAnimation:
             self.position_y - self.jump_height + 50,  # offset_y
             65, 100                            # width, height
         )
+        self.is_jumping_over_ball = False
 
-    def draw_score(self):
-        score_surface = self.score_font.render(f"Score: {self.score}", True, (0, 0, 0))
-        score_rect = score_surface.get_rect(topleft=(20, 20))
-        bg_rect = pygame.Rect(score_rect.left - 5, score_rect.top - 5, score_rect.width + 10, score_rect.height + 10)
-        pygame.draw.rect(self.screen, (255, 255, 255), bg_rect)
-        self.screen.blit(score_surface, score_rect)
-
-    def update(self,keys_pressed):
+    def update(self):
         self.frame_counter += 1
         if self.frame_counter >= self.frame_delay:
             self.frame_counter = 0
@@ -65,6 +61,8 @@ class CharacterAnimation:
                 self.jump_height += self.jump_speed
                 if self.jump_speed > 0:
                     self.jump_speed -= 0.2
+                if self.is_jumping_over_ball:
+                    self.position_x += self.move_speed
             else:
                 self.is_jumping = False
                 self.jump_speed = 10
@@ -73,22 +71,17 @@ class CharacterAnimation:
                 self.jump_height -= self.fall_speed
                 if self.fall_speed < 10:
                     self.fall_speed += 0.5 * gravity
+                if self.is_jumping_over_ball:
+                    self.position_x += self.move_speed
             else:
                 self.jump_height = 0
                 self.is_grounded = True
                 self.fall_speed = 0
-                
-        # Handle movement (left and right)
-        if CONTROL_KEYS["left"] in keys_pressed:
-            self.position_x -= self.move_speed
-            self.is_flipped = True
-        if CONTROL_KEYS["right"] in keys_pressed:
-            self.position_x += self.move_speed
-            self.is_flipped = False
- 
+                self.is_jumping_over_ball = False
+
         # Ensure the character stays within screen bounds
-        self.position_x = max(0, min(WIDTH - 150, self.position_x))  # 120 is character width
-        self.position_y = max(0, min(HEIGHT - 200, self.position_y))  # 200 is character height
+        self.position_x = max(0, min(WIDTH - 150, self.position_x)) 
+        self.position_y = max(0, min(HEIGHT - 200, self.position_y))
 
         offset_x = 50
         offset_y = 50
@@ -120,7 +113,55 @@ class CharacterAnimation:
         surface.blit(img, (draw_x, draw_y))
 
         # Draw the bounding rectangle (use same width/height as image)
-        pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
+        # pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
         
     def reset(self):
         self.__init__()
+ 
+    def auto_chase(self, ball, player):
+        bot_rect = self.rect
+        ball_rect = ball.get_rect()
+
+        if ball_rect.right < bot_rect.left:
+            self.position_x -= self.move_speed
+            self.is_flipped = True
+
+            if self.current_action != "run":
+                self.current_action = "run"
+                self.set_animation()
+
+        if ball_rect.right == bot_rect.left and ball_rect.bottom > bot_rect.top:
+            self.position_x -= self.move_speed
+            self.is_flipped = True
+
+            if self.current_action != "kick":
+                self.current_action = "kick"
+                self.set_animation()
+                
+        if ball_rect.left > bot_rect.right and self.is_grounded:
+            self.position_x += self.move_speed
+            self.is_flipped = False
+
+            if self.current_action != "run":
+                self.current_action = "run"
+                self.set_animation()
+
+        if ball_rect.left == bot_rect.right and ball_rect.bottom > bot_rect.top:    
+            self.is_flipped = False
+            self.is_jumping = True
+            self.is_jumping_over_ball = True
+
+            if self.current_action != "jump":
+                self.current_action = "jump"
+                self.set_animation()
+    
+        # Jump if the ball is above the bot and the bot is on the ground
+        if ball_rect.bottom - 10 < bot_rect.top and self.is_grounded and abs(ball_rect.centerx - bot_rect.centerx) < 50:
+            self.is_jumping = True
+            if self.current_action != "jump":
+                self.current_action = "jump"
+                self.set_animation()
+
+
+
+
