@@ -46,7 +46,7 @@ class Arena:
 
         if remaining <= 0:
             print("⏰ Time's up!")
-            pygame.time.wait(2000)
+            pygame.time.wait(100)
             pygame.quit()
             sys.exit()
             
