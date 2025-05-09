@@ -5,7 +5,7 @@ import random
 
 class Bot:
     def __init__(self):
-        def load_images(frame_list, resize=(150, 200)):
+        def load_images(frame_list, resize=(110, 110)):
             loaded_images = []
             for frame in frame_list:
                 try:
@@ -16,10 +16,10 @@ class Bot:
                     print(f"❌ Error: Could not load image {frame}")
             return loaded_images
 
-        idle_frames = [f'images/player/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
-        run_frames = [f'images/player/Run A-{str(i).zfill(2)}.png' for i in range(1, 9)]
-        kick_frames = ['images/player/Attack A-03.png', 'images/player/Attack A-04.png' ]
-        jump_frames = [f'images/player/Jump A-{str(i).zfill(2)}.png' for i in range(1, 11)]
+        idle_frames = [f'images/bot_level_1/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
+        run_frames = [f'images/bot_level_1/Run A-{str(i).zfill(2)}.png' for i in range(1, 8)]
+        kick_frames = ['images/bot_level_1/Attack A-03.png', 'images/bot_level_1/Attack A-04.png' ]
+        jump_frames = [f'images/bot_level_1/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
 
         self.idle_animation = load_images(idle_frames)
         self.run_animation = load_images(run_frames)
@@ -39,8 +39,8 @@ class Bot:
         self.jump_height = 0
         self.jump_speed = 10
         self.fall_speed = 0
-        self.is_flipped = False  # Track direction
-        self.position_x = 700  # Initial x position
+        self.is_flipped = True  # Track direction
+        self.position_x = 570  # Initial x position
         self.position_y = GROUND_Y  # initial vertical position
         self.move_speed = 5  # Movement speed
         self.rect = pygame.Rect(
@@ -83,7 +83,7 @@ class Bot:
         self.position_x = max(0, min(WIDTH - 150, self.position_x)) 
         self.position_y = max(0, min(HEIGHT - 200, self.position_y))
 
-        offset_x = 50
+        offset_x = 0
         offset_y = 50
         self.rect.x = self.position_x + offset_x
         self.rect.y = self.position_y - self.jump_height + offset_y
@@ -104,7 +104,7 @@ class Bot:
     def draw(self, surface):
         img = self.current_animation[self.frame_index]
         draw_x = self.position_x 
-        draw_y = self.position_y - self.jump_height
+        draw_y = self.position_y - self.jump_height + 50
 
         if self.is_flipped:
             img = pygame.transform.flip(img, True, False)
