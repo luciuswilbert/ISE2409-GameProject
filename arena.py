@@ -4,9 +4,14 @@ import sys
 from config import TOTAL_TIME
 
 class Arena:
-    def __init__(self):
+    def __init__(self, level):
+        
         # load Background
-        self.background_img_raw = pygame.image.load("images/background/fire_animatiaon.gif")
+        if level == 1:
+            self.background_img_raw = pygame.image.load("images/background/fire_animatiaon.gif")
+        else:
+            self.background_img_raw = pygame.image.load("images/background/throne room.png")
+        
         self.background_img = pygame.transform.scale(self.background_img_raw, (800, 600))
         
         # Load Goal
@@ -34,6 +39,8 @@ class Arena:
         self.celebration_duration_sec = 3  # seconds
         self.clock = pygame.time.Clock()
         self.ball_last_kicked_by_character = True
+        self.time_out = False
+        self.win = False
 
     def draw_timer(self, screen):
         elapsed = int(time.time() - self.start_time)
@@ -47,8 +54,11 @@ class Arena:
         if remaining <= 0:
             print("⏰ Time's up!")
             pygame.time.wait(100)
-            pygame.quit()
-            sys.exit()
+            self.time_out = True
+            
+        # Check if player has won
+            # If player wins set the self.win to True
+        
             
     def draw_score(self, screen):
         score_surface = self.score_font.render(f"Score: {self.score}", True, (0, 0, 0))
@@ -106,3 +116,5 @@ class Arena:
             self.celebrating = False
             
             return  # Skip rest of the draw logic
+        
+ 
