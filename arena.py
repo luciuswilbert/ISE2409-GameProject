@@ -10,10 +10,10 @@ class Arena:
         self.background_img = pygame.transform.scale(self.background_img_raw, (800, 600))
         
         # Load Goal
-        self.football_net_img = pygame.image.load("images/goal/9-99121_soccer-goal-clipart-removebg-preview.png")
-        self.football_net_img = pygame.transform.scale(self.football_net_img, (100, 250))
-        self.left_net_rect = pygame.Rect(0, 350, 100, 250)     # Left side
-        self.right_net_rect = pygame.Rect(700, 350, 100, 250)  # Right side
+        self.football_net_img = pygame.image.load("images/goal/soccer-goal.png")
+        self.football_net_img = pygame.transform.scale(self.football_net_img, (100, 300))
+        self.left_net_rect = pygame.Rect(0, 300, 100, 250)     # Left side
+        self.right_net_rect = pygame.Rect(700, 300, 100, 250)  # Right side
         self.left_net_rect_goal_area = pygame.Rect(30, 395, 50, 150)
         self.right_net_rect_goal_area = pygame.Rect(720, 395, 50, 150)
         self.left_net_rect_top_bar = pygame.Rect(30, 380, 50, 15)
@@ -83,7 +83,7 @@ class Arena:
         # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
         # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
 
-        # # Draw second rectangle (e.g., green, outlined)
+        # # # Draw second rectangle (e.g., green, outlined)
         # pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
         # pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
     

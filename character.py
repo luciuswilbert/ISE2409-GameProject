@@ -120,7 +120,7 @@ class CharacterAnimation:
         surface.blit(img, (draw_x, draw_y))
 
         # Draw the bounding rectangle (use same width/height as image)
-        pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
+        # pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
         
     def reset(self):
         self.__init__()

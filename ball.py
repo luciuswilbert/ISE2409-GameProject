@@ -65,6 +65,10 @@ class Ball:
         if abs(self.vel[0]) < 1e-4 and self.pos[1] == 365 and (self.pos[0] <= 30 or self.pos[0] >= 720):
             print("Ball stopped moving. Resetting position.")
             return True
+        
+        if self.pos[0] <= 0 or self.pos[0] >= WIDTH:
+            print("Ball out of bounds. Resetting position.")
+            return True
     
         return False
             
