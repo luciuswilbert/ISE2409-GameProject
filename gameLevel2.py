@@ -1,4 +1,7 @@
+import time
 import pygame
+from botLevel1 import BotLevel1
+from botLevel3 import BotLevel3
 from config import *
 from ball import Ball
 from character import CharacterAnimation

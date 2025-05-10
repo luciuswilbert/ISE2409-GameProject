@@ -1,10 +1,9 @@
-
 import pygame
 from config import *
 
 class BotLevel2:
     def __init__(self):
-        def load_images(frame_list, resize=(110, 110)):
+        def load_images(frame_list, resize=(150, 200)):
             loaded_images = []
             for frame in frame_list:
                 try:
@@ -12,13 +11,13 @@ class BotLevel2:
                     img = pygame.transform.scale(img, resize)
                     loaded_images.append(img)
                 except pygame.error:
-                    print(f"❌ Error: Could not load image {frame}")
+                    print(f"Error: Could not load image {frame}")
             return loaded_images
 
-        idle_frames = [f'images/bot_level_1/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
-        run_frames = [f'images/bot_level_1/Run A-{str(i).zfill(2)}.png' for i in range(1, 8)]
-        kick_frames = ['images/bot_level_1/Attack A-03.png', 'images/bot_level_1/Attack A-04.png' ]
-        jump_frames = [f'images/bot_level_1/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
+        idle_frames = [f'images/bot_level_2/Idle A-{str(i).zfill(2)}.png' for i in range(1, 8)]
+        run_frames = [f'images/bot_level_2/Run A-{str(i).zfill(2)}.png' for i in range(1, 9)]
+        kick_frames = [f'images/bot_level_2/Attack A-{str(i).zfill(2)}.png' for i in range(1, 5)]
+        jump_frames = [f'images/bot_level_2/Jump A-{str(i).zfill(2)}.png' for i in range(1, 8)]
 
         self.idle_animation = load_images(idle_frames)
         self.run_animation = load_images(run_frames)
@@ -44,7 +43,7 @@ class BotLevel2:
         self.move_speed = 5  # Movement speed
         self.rect = pygame.Rect(
             self.position_x + 50,              # offset_x
-            self.position_y - self.jump_height + 50,  # offset_y
+            self.position_y - self.jump_height + 0,  # offset_y
             65, 100                            # width, height
         )
         self.is_jumping_over_ball = False
@@ -103,7 +102,7 @@ class BotLevel2:
     def draw(self, surface):
         img = self.current_animation[self.frame_index]
         draw_x = self.position_x 
-        draw_y = self.position_y - self.jump_height + 50
+        draw_y = self.position_y - self.jump_height - 50
 
         if self.is_flipped:
             img = pygame.transform.flip(img, True, False)

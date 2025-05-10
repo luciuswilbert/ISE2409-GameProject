@@ -52,7 +52,7 @@ class Arena:
         screen.blit(timer_surface, timer_rect)
 
         if remaining <= 0:
-            print("⏰ Time's up!")
+            print("Time's up!")
             pygame.time.wait(100)
             self.time_out = True
             
@@ -71,7 +71,7 @@ class Arena:
         if self.left_net_rect_goal_area.contains(ball_rect) or self.right_net_rect_goal_area.contains(ball_rect):
             if self.ball_last_kicked_by_character and not self.celebrating:
                 self.score += 1
-                print("GOAL! 🎯 Score:", self.score)
+                print("GOAL! Score:", self.score)
                 self.celebrating = True
                 self.celebration_start_time = time.time()
                 return True  # Indicate goal scored

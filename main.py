@@ -16,14 +16,14 @@ pygame.display.set_caption("Legends of Orbithra")
 
 
 # Game level 1
-while True:    
-    if GameLevel1(screen):        
-        break # If player wins level 1, break the loop to transition to level 2
-    else:
-        # If player loses level 1, show restart menu
-        # If player chooses NOT to restart level 1, quit the game
-        pygame.quit()
-        sys.exit()      
+# while True:    
+#     if GameLevel1(screen):        
+#         break # If player wins level 1, break the loop to transition to level 2
+#     else:
+#         # If player loses level 1, show restart menu
+#         # If player chooses NOT to restart level 1, quit the game
+#         pygame.quit()
+#         sys.exit()      
 
 # Transition to level 2
 
