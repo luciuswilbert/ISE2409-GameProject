@@ -60,6 +60,11 @@ def GameLevel2(screen):
         # Update scoreboard
         goal_scored = arena.update_score(ball.get_rect())
 
+        if arena.score >= 3 and not isinstance(bot, BotLevel3):
+            print("Bot upgraded to Level 3!")
+            bot = BotLevel3()
+
+
         # Draw game elements
         arena.draw(screen, ball, player, bot)
         

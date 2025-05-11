@@ -4,6 +4,7 @@ import sys
 from config import *
 from gameLevel1 import GameLevel1
 from gameLevel2 import GameLevel2
+from storyscene.introscene1 import *
 
 # Initialize Pygame
 pygame.init()
@@ -26,6 +27,8 @@ pygame.display.set_caption("Legends of Orbithra")
 #         sys.exit()      
 
 # Transition to level 2
+play_first_video(screen)
+play_intro_scene(screen)
 
 
 # Game level 2
