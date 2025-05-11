@@ -16,6 +16,9 @@ def play_intro_scene(screen):
     bg_without_orb = pygame.image.load("images/background/scene02.jpeg")
     bg_without_orb = pygame.transform.scale(bg_without_orb, (800, 600))
 
+    grass_sound = pygame.mixer.Sound("storyscene/grasssound.mp3")
+    grass_sound.set_volume(0.3)  # optional, reduce volume
+
     # Load all run frames for exit animation
     lucifer_run_frames = [
         pygame.transform.scale(
@@ -43,6 +46,7 @@ def play_intro_scene(screen):
     running = True
     phase = "start"
     phase_start_time = time.time()
+    lucifer_moving = False
 
     while running:
         for event in pygame.event.get():
@@ -81,7 +85,10 @@ def play_intro_scene(screen):
 
         elif phase == "exiting":
             lucifer_exit_x += 2
+            if not pygame.mixer.get_busy():
+                grass_sound.play()
             lucifer_run_frame_counter += 1
+            
             if lucifer_run_frame_counter >= lucifer_exit_frame_delay:
                 lucifer_run_frame_counter = 0
                 lucifer_run_frame_index = (lucifer_run_frame_index + 1) % len(lucifer_run_frames)
@@ -106,6 +113,20 @@ def play_intro_scene(screen):
         elif phase != "start":
             lucifer.update()
             lucifer.draw(screen)
+
+        # Determine if Lucifer is currently moving
+        if phase in ["entering", "exiting"]:
+            lucifer_moving = True
+        else:
+            lucifer_moving = False
+
+        # Play or stop grass sound accordingly
+        if lucifer_moving:
+            if not pygame.mixer.get_busy():
+                grass_sound.play()  # -1 = loop indefinitely
+        else:
+            grass_sound.stop()
+
 
         pygame.display.flip()
         clock.tick(60)

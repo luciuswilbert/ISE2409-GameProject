@@ -6,6 +6,8 @@ from arena import Arena
 from botLevel1 import BotLevel1
 import sys
 
+from storyscene.introscene1 import play_intro_scene
+
 def GameLevel1(screen):
    
     # Game elements (create objects)
@@ -72,7 +74,7 @@ def GameLevel1(screen):
         
         if arena.time_out:
             print("Level 1 Game Over!")
-            running = False
+            play_intro_scene(screen)
       
     # Check if player has won  
     if arena.win:
