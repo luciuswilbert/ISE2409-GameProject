@@ -158,6 +158,8 @@ def play_first_video(screen):
         frame = np.rot90(frame)
         surface = pygame.surfarray.make_surface(frame)
         surface = pygame.transform.scale(surface, screen.get_size())
+        surface = pygame.transform.flip(surface, True, False) 
+
 
         screen.blit(surface, (0, 0))
         pygame.display.flip()
@@ -174,7 +176,7 @@ def play_first_video(screen):
 def play_second_video(screen):
     cap = cv2.VideoCapture("storyscene/chaos.mp4")
     if not cap.isOpened():
-        print("❌ Could not open video.")
+        print("Could not open video.")
         return
 
     clock = pygame.time.Clock()
@@ -193,6 +195,7 @@ def play_second_video(screen):
         frame = np.rot90(frame)
         surface = pygame.surfarray.make_surface(frame)
         surface = pygame.transform.scale(surface, screen.get_size())
+        surface = pygame.transform.flip(surface, True, False) 
 
         screen.blit(surface, (0, 0))
         pygame.display.flip()
