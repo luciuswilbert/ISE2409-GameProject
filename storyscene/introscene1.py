@@ -195,14 +195,14 @@ def play_first_video(screen):
     pygame.mixer.music.stop()
 
 def play_second_video(screen):
-    cap = cv2.VideoCapture("storyscene/chaos.mp4")
+    cap = cv2.VideoCapture("storyscene/revisionChaos.mp4")
     if not cap.isOpened():
         print("Could not open video.")
         return
 
     clock = pygame.time.Clock()
 
-    pygame.mixer.music.load("storyscene/chaos.mp3")
+    pygame.mixer.music.load("storyscene/revisionChaos.mp3")
 
     start_time = pygame.time.get_ticks()  # Record start time
     music_played = False

@@ -15,4 +15,4 @@ CONTROL_KEYS = {"left": pygame.K_a, "right": pygame.K_d, "jump": pygame.K_SPACE}
 gravity = 0.5
 
 # Total Game Time
-TOTAL_TIME = 60  # seconds
+TOTAL_TIME = 10  # seconds

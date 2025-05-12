@@ -29,8 +29,6 @@ while True:
 
 # Transition to level 2
 
-play_intro_scene(screen)
-
 
 # Game level 2
 while True:    

@@ -74,12 +74,7 @@ def GameLevel1(screen):
         
         if arena.time_out:
             print("Level 1 Game Over!")
-            play_intro_scene(screen)
+            break
       
     # Check if player has won  
-    if arena.win:
-        print("Player wins Level 1!")
-        return True
-    else:
-        print("Player loses Level 1!")
-        return False
+    return True
