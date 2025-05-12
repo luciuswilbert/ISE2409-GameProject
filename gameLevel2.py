@@ -1,7 +1,6 @@
 import time
 import pygame
 from botLevel1 import BotLevel1
-from botLevel3 import BotLevel3
 from config import *
 from ball import Ball
 from character import CharacterAnimation
@@ -60,9 +59,7 @@ def GameLevel2(screen):
         # Update scoreboard
         goal_scored = arena.update_score(ball.get_rect())
 
-        if arena.score >= 3 and not isinstance(bot, BotLevel3):
-            print("Bot upgraded to Level 3!")
-            bot = BotLevel3()
+
 
 
         # Draw game elements
@@ -78,14 +75,9 @@ def GameLevel2(screen):
         pygame.display.flip()
         clock.tick(FPS)
         
-        if arena.time_out:
+        if arena.time_out or arena.score >= 3:
             print("Level 1 Game Over!")
-            running = False
+            return
       
     # Check if player has won  
-    if arena.win:
-        print("Player wins Level 1!")
-        return True
-    else:
-        print("Player loses Level 1!")
-        return False
+    return True

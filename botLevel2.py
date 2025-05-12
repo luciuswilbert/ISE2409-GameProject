@@ -18,11 +18,13 @@ class BotLevel2:
         run_frames = [f'images/bot_level_2/Run A-{str(i).zfill(2)}.png' for i in range(1, 9)]
         kick_frames = [f'images/bot_level_2/Attack A-{str(i).zfill(2)}.png' for i in range(1, 5)]
         jump_frames = [f'images/bot_level_2/Jump A-{str(i).zfill(2)}.png' for i in range(1, 8)]
+        dead_frames = [f'images/bot_level_2/Dead A-{str(i).zfill(2)}.png' for i in range(1, 9)]
 
         self.idle_animation = load_images(idle_frames)
         self.run_animation = load_images(run_frames)
         self.kick_animation = load_images(kick_frames)
         self.jump_animation = load_images(jump_frames)
+        self.dead_animation = load_images(dead_frames, resize=(150, 200))
 
         if not all([self.idle_animation, self.run_animation, self.kick_animation, self.jump_animation]):
             raise RuntimeError("One or more animations failed to load. Check file paths.")
@@ -97,6 +99,8 @@ class BotLevel2:
             self.current_animation = self.jump_animation
             self.is_jumping = True
             self.is_grounded = False
+        elif self.current_action == "dead":
+            self.current_animation = self.dead_animation
         self.frame_index = 0
         
     def draw(self, surface):

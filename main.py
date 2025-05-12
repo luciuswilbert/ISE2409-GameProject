@@ -183,12 +183,11 @@ def throne_room_scene(screen):
     clock = pygame.time.Clock()
 
     pygame.mixer.music.load("storyscene/beforeLuciferSoundTrack.mp3")
-    pygame.mixer.music.play(-1)  # -1 = loop forever
+    pygame.mixer.music.play(-1)
 
     background = pygame.image.load("images/background/throne room.png").convert()
     background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
-    # Use CharacterAnimation for player (same size/pose as in gate scene)
     player = CharacterAnimation()
     player.position_x = 100
     player.position_y = 400
@@ -200,9 +199,8 @@ def throne_room_scene(screen):
     bot.set_animation()
     bot.is_flipped = True 
 
-    
     start_time = pygame.time.get_ticks()
-    duration = 5000  # milliseconds
+    duration = 5000
 
     running = True
     while running:
@@ -212,17 +210,15 @@ def throne_room_scene(screen):
                 sys.exit()
 
         if pygame.time.get_ticks() - start_time > duration:
-            pygame.mixer.music.fadeout(1000)  # fade out in 1 second
+            pygame.mixer.music.fadeout(1000)  
             running = False
 
-
         screen.blit(background, (0, 0))
-        player.update(set())  # Stay idle
+        player.update(set()) 
         player.draw(screen)
 
         bot.update()
         bot.draw(screen)
-
 
         pygame.display.flip()
         clock.tick(60)
@@ -231,7 +227,7 @@ def throne_room_dialogue(screen):
     clock = pygame.time.Clock()
 
     pygame.mixer.music.load("storyscene/beforeLuciferSoundTrack.mp3")
-    pygame.mixer.music.play(-1)  # -1 = loop forever
+    pygame.mixer.music.play(-1)  
 
     background = pygame.image.load("images/background/throne room.png").convert()
     background = pygame.transform.scale(background, (WIDTH, HEIGHT))
@@ -314,7 +310,7 @@ def throne_room_dialogue(screen):
             screen.blit(message_text, (100, 100))
 
         else:
-            # End of dialogue — fade out and return to Level 2
+            # End of dialogue — fade out and return to Level 2d
             pygame.mixer.music.fadeout(1000)
             fade_to_black(screen)
             return
@@ -322,11 +318,305 @@ def throne_room_dialogue(screen):
         pygame.display.flip()
         clock.tick(60)
 
+def throne_room_dialogue_after(screen):
+    clock = pygame.time.Clock()
+
+    pygame.mixer.music.load("storyscene/beforeLuciferSoundTrack.mp3")
+    pygame.mixer.music.play(-1)  
+
+    background = pygame.image.load("images/background/throne room.png").convert()
+    background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+
+    # Player
+    player = CharacterAnimation()
+    player.position_x = 100
+    player.position_y = 400
+    player.set_animation()
+
+    # Lucifer
+    from botLevel2 import BotLevel2
+    bot = BotLevel2()
+    bot.position_x = WIDTH - 220
+    bot.position_y = 400
+    bot.set_animation()
+    bot.is_flipped = True
+
+    # Dialogue font
+    font = pygame.font.SysFont("arial", 24, bold=True)
+
+    # Dialogue script: (speaker, message)
+    dialogues = [
+        ("You", "YES!!!, I won!"),
+        ("You", "Now give me the Orb."),
+        ("Lucifer", "You think I will give it to you?"),
+        ("Lucifer", "I will never give it to you."),
+        ("You", "But we made a deal."),
+        ("Lucifer", "A deal?"),
+        ("Lucifer", "I don't remember any deal."),
+        ("You", "What?"),
+        ("Lucifer", "I will keep the Orb and you will be my servant."),
+        ("You", "No!!!"),
+        ("Lucifer", "HAHAHAHAHAHA"),
+    ]
+
+    index = 0
+    advance_delay = 600  # ms between advancing dialogue
+    waiting = False
+    start_time = pygame.time.get_ticks()
+
+    running = True
+    while running:
+        keys = pygame.key.get_pressed()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN and not waiting:
+                index += 1
+                waiting = True
+                start_time = pygame.time.get_ticks()
+
+        if waiting and pygame.time.get_ticks() - start_time > advance_delay:
+            waiting = False
+
+        screen.blit(background, (0, 0))
+        player.update(set())
+        player.draw(screen)
+        bot.update()
+        bot.draw(screen)
+
+        if index < len(dialogues):
+            speaker, message = dialogues[index]
+
+            pygame.draw.rect(screen, (255, 255, 255), (80, 50, 640, 100), border_radius=10)
+            pygame.draw.rect(screen, (0, 0, 0), (80, 50, 640, 100), width=3, border_radius=10)
+
+            speaker_text = font.render(f"{speaker}:", True, (0, 0, 0))
+            message_text = font.render(message, True, (0, 0, 0))
+            screen.blit(speaker_text, (100, 60))
+            screen.blit(message_text, (100, 100))
+
+        else:
+            pygame.mixer.music.fadeout(1000)
+            fade_to_black(screen)
+
+            move_player_to_lucifer(screen, player, bot, background)
+            return
+
+        pygame.display.flip()
+        clock.tick(60)
+
+def move_player_to_lucifer(screen, player, bot, background):
+    clock = pygame.time.Clock()
+    target_x = bot.position_x - 100
+
+    while player.position_x < target_x:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        player.position_x += player.move_speed
+        player.is_flipped = False
+        player.current_action = "run"
+        player.set_animation()
+
+        player.update(set())
+        bot.update()
+
+        screen.blit(background, (0, 0))
+        player.draw(screen)
+        bot.draw(screen)
+        pygame.display.flip()
+        clock.tick(60)
+
+    player.current_action = "idle"
+    player.set_animation()
+    player.update(set())
+    screen.blit(background, (0, 0))
+    player.draw(screen)
+    bot.draw(screen)
+    pygame.display.flip()
+    pygame.time.wait(3000)
+
+    player.current_action = "kick"
+    player.set_animation()
+
+    for i in range(len(player.kick_animation)):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        player.update(set())
+        screen.blit(background, (0, 0))
+        player.draw(screen)
+        bot.draw(screen)
+        pygame.display.flip()
+        pygame.time.delay(100)
+
+    bot.current_action = "dead"
+    bot.set_animation()
+
+    for i in range(len(bot.dead_animation)):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        bot.frame_index = i
+        screen.blit(background, (0, 0))
+        player.draw(screen)
+        bot.draw(screen)
+        pygame.display.flip()
+        pygame.time.delay(80)
+
+    screen.blit(background, (0, 0))
+    player.draw(screen)
+    bot.draw(screen)
+    pygame.display.flip()
+    pygame.time.wait(3000)
+
+    fade_to_black(screen)
+    orb_statue_scene(screen)
 
 
+def orb_statue_scene(screen):
+    clock = pygame.time.Clock()
+
+    # Load both backgrounds
+    orb_present = pygame.image.load("storyscene/orbAtLucifer.png").convert()
+    orb_present = pygame.transform.scale(orb_present, (WIDTH, HEIGHT))
+
+    orb_missing = pygame.image.load("storyscene/orbAtLuciferMissing.jpeg").convert()
+    orb_missing = pygame.transform.scale(orb_missing, (WIDTH, HEIGHT))
+
+    # Setup player
+    player = CharacterAnimation()
+    player.position_x = 100
+    player.position_y = 400
+    player.set_animation()
+
+    # Define area near statue
+    statue_trigger = pygame.Rect(WIDTH - 180, 380, 80, 120)
+    orb_collected = False
+
+    running = True
+    while running:
+        keys = pygame.key.get_pressed()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
+                pygame.quit()
+                sys.exit()
+
+        # Movement
+        moving = False
+        if keys[pygame.K_a]:  # Move left
+            player.position_x -= player.move_speed
+            player.is_flipped = True
+            moving = True
+        if keys[pygame.K_d]:  # Move right
+            player.position_x += player.move_speed
+            player.is_flipped = False
+            moving = True
+
+        if moving and player.current_action != "run":
+            player.current_action = "run"
+            player.set_animation()
+        elif not moving and player.current_action != "idle":
+            player.current_action = "idle"
+            player.set_animation()
+
+        player.position_x = max(30, min(WIDTH - 100, player.position_x))
+        player.update(keys)
+
+        # Check trigger area
+        player_rect = player.rect
+        if player_rect.colliderect(statue_trigger):
+            orb_collected = True
+
+        # Draw scene
+        screen.blit(orb_missing if orb_collected else orb_present, (0, 0))
+        player.draw(screen)
+        pygame.display.flip()
+        clock.tick(60)
+
+        # Optionally: end after orb collected
+        if orb_collected:
+            pygame.time.wait(1000)
+            fade_to_black(screen)
+            chaos_statue_scene(screen)
+            return
+
+def chaos_statue_scene(screen):
+    clock = pygame.time.Clock()
+
+    # Load both backgrounds
+    chaos_bg = pygame.image.load("storyscene/stormBackToFirstBackground.png").convert()
+    chaos_bg = pygame.transform.scale(chaos_bg, (WIDTH, HEIGHT))
+
+    orb_restored_bg = pygame.image.load("images/background/scene01.png").convert()
+    orb_restored_bg = pygame.transform.scale(orb_restored_bg, (WIDTH, HEIGHT))
+
+    # Setup player on the right (carrying orb)
+    player = CharacterAnimation()
+    player.position_x = WIDTH - 120
+    player.position_y = 400
+    player.set_animation()
+
+    statue_trigger = pygame.Rect((WIDTH // 2) - 50, 380, 100, 120)
+    orb_placed = False
+
+    running = True
+    while running:
+        keys = pygame.key.get_pressed()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
+                pygame.quit()
+                sys.exit()
+
+        # Movement
+        moving = False
+        if keys[pygame.K_a]:
+            player.position_x -= player.move_speed
+            player.is_flipped = True
+            moving = True
+        if keys[pygame.K_d]:
+            player.position_x += player.move_speed
+            player.is_flipped = False
+            moving = True
+
+        if moving and player.current_action != "run":
+            player.current_action = "run"
+            player.set_animation()
+        elif not moving and player.current_action != "idle":
+            player.current_action = "idle"
+            player.set_animation()
+
+        player.position_x = max(30, min(WIDTH - 100, player.position_x))
+        player.update(keys)
+
+        # Check if orb placed
+        player_rect = player.rect
+        if player_rect.colliderect(statue_trigger):
+            orb_placed = True
+
+        # Draw scene
+        if orb_placed:
+            fade_to_black(screen, duration=1200)
+            screen.blit(orb_restored_bg, (0, 0))  # change background
+            player.draw(screen)
+            pygame.display.flip()
+            pygame.time.wait(2000)
+            fade_to_black(screen, duration=1500)
+            return
+
+        screen.blit(chaos_bg, (0, 0))
+        player.draw(screen)
+        pygame.display.flip()
+        clock.tick(60)
 
 
-    
 # Start menu and story intro
 # play_first_video(screen)
 # play_intro_scene(screen)
@@ -334,10 +624,9 @@ def throne_room_dialogue(screen):
 # pygame.display.flip()
 # pygame.time.delay(200)
 
-
 # # Game level 1
-# while True:    
-#     if GameLevel1(screen):        
+# while True:
+#     if GameLevel1(screen):       
 #         break # If player wins level 1, break the loop to transition to level 2
 #     else:
 #         # If player loses level 1, show restart menu
@@ -360,26 +649,19 @@ def throne_room_dialogue(screen):
 # fade_to_black(screen, duration=1000)
 # pygame.mixer.music.stop()
 
-gate_entry_scene(screen, "TransitionLv1Lv2/castle.png")
+# gate_entry_scene(screen, "TransitionLv1Lv2/castle.png")
 
-throne_room_scene(screen)
+# throne_room_scene(screen)
 
-throne_room_dialogue(screen)
+# throne_room_dialogue(screen)
 
 
-# Game level 2
-while True:    
-    if GameLevel2(screen):        
-        break # If player wins level 2, break the loop to transition to story outro
-    else:
-        # If player loses level 2, show restart menu
-        # If player chooses NOT to restart level 2, quit the game
-        pygame.quit()
-        sys.exit()  
-    
+# # Game level 2
+# GameLevel2(screen)
+
+throne_room_dialogue_after(screen)
 
 # Story outro
-
 
 pygame.quit()
 sys.exit()
