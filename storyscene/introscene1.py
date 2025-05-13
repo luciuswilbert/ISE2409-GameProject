@@ -131,31 +131,31 @@ def play_intro_scene(screen):
         pygame.display.flip()
         clock.tick(60)
 
-# def play_chaos_video(screen):
-#     cap = cv2.VideoCapture("storyscene/chaosNoOrb.mp4")
+def play_chaos_video(screen):
+    cap = cv2.VideoCapture("storyscene/chaosNoOrb.mp4")
 
-#     if not cap.isOpened():
-#         print(" Could not open video.")
-#         return
+    if not cap.isOpened():
+        print(" Could not open video.")
+        return
 
-#     clock = pygame.time.Clock()
+    clock = pygame.time.Clock()
 
-#     while cap.isOpened():
-#         ret, frame = cap.read()
-#         if not ret:
-#             break
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-#         # Convert BGR (OpenCV) to RGB (Pygame)
-#         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#         frame = np.rot90(frame)  # Rotate if needed
-#         surface = pygame.surfarray.make_surface(frame)
-#         surface = pygame.transform.scale(surface, screen.get_size())
+        # Convert BGR (OpenCV) to RGB (Pygame)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = np.rot90(frame)  # Rotate if needed
+        surface = pygame.surfarray.make_surface(frame)
+        surface = pygame.transform.scale(surface, screen.get_size())
 
-#         screen.blit(surface, (0, 0))
-#         pygame.display.flip()
-#         clock.tick(30)  # Match your video FPS
+        screen.blit(surface, (0, 0))
+        pygame.display.flip()
+        clock.tick(30)  # Match your video FPS
 
-#     cap.release()
+    cap.release()
 
 def play_first_video(screen):
     cap = cv2.VideoCapture("storyscene/firstVideo.mp4")
