@@ -18,7 +18,7 @@ class MainGame:
         initialize_sounds()
         
         # Screen setup
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
         pygame.display.set_caption("Legends of OrbArena")
         
         # Game state

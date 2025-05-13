@@ -63,7 +63,7 @@ class PowerManager:
         self.vine_frames = []
         if self.level > 1:  # ADDED: Level check for vine frames
             for i in range(1, 6):
-                img_path = r'C:\Users\User\OneDrive - Asia Pacific University of Technology And Innovation (APU)\Desktop\ISE\ISE2409-GameProject - Copy\images\Vine\vine'+ str(i) + ".png"
+                img_path = r'images/vine/vine'+ str(i) + ".png"
                 try:
                     img = pygame.image.load(img_path).convert_alpha()
                     img = pygame.transform.scale(img, (80, 200))
