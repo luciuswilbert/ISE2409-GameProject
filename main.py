@@ -1,5 +1,6 @@
 import pygame
 import sys
+import pygame.mixer
 
 from config import *
 from gameLevel1 import GameLevel1
@@ -7,6 +8,7 @@ from gameLevel2 import GameLevel2
 
 # Initialize Pygame
 pygame.init()
+pygame.mixer.init()
 
 # Screen setup
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)

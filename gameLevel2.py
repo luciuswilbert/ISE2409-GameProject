@@ -45,7 +45,7 @@ def GameLevel2(screen):
                     player.set_animation()
 
         # Update game state for player
-        player.update(keys_pressed)
+        player.update(keys_pressed, bot)
         
         # Update game state for bot
         bot.auto_chase(ball)

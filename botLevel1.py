@@ -1,6 +1,11 @@
 
 import pygame
 from config import *
+import random
+from smokeParticle import SmokeParticle
+import pygame.mixer
+import pygame.image
+import math
 
 class BotLevel1:
     def __init__(self):
@@ -48,6 +53,16 @@ class BotLevel1:
             65, 100                            # width, height
         )
         self.is_jumping_over_ball = False
+        self.power_kick_particles = []
+        self.particles = []
+        self.start_fire = False
+        self.fire_start_time = None
+        self.fire_duration = 8000 
+        self.fire_frame_counter = 0
+        self.fire_frame_delay = 5  # Adjust this to control particle spawn rate
+        self.fire_sound = pygame.mixer.Sound("audio/mixkit-fire-spell-with-explosion-1338.wav")
+        self.fire_sound_continuous = pygame.mixer.Sound("audio/fire-noise-159659.mp3")
+        self.power_kick = False
 
     def update(self):
         self.frame_counter += 1
@@ -136,6 +151,7 @@ class BotLevel1:
             if self.current_action != "kick":
                 self.current_action = "kick"
                 self.set_animation()
+                # self.start_power_kick()
                 
         if ball_rect.left > bot_rect.right and self.is_grounded:
             self.position_x += self.move_speed
@@ -160,7 +176,105 @@ class BotLevel1:
             if self.current_action != "jump":
                 self.current_action = "jump"
                 self.set_animation()
+                    
+    def trigger_full_ground_fire(self, screen, player):
+ 
+        current_time = pygame.time.get_ticks()
 
+        if self.start_fire:
+            if self.fire_start_time is None:
+                self.fire_start_time = current_time
+                self.fire_sound.play(-1)  # Loop fire sound
+                self.fire_sound_continuous.play(-1)  # Loop fire sound continuously
 
+            elapsed = current_time - self.fire_start_time
+            remaining = max(self.fire_duration - elapsed, 0)
 
+            if elapsed >= self.fire_duration:
+                self.start_fire = False
+                self.fire_start_time = None
+                self.fire_sound.fadeout(1000)  # Fade out sound after fire ends
+                self.fire_sound_continuous.fadeout(1000)  # Fade out sound after fire ends
+            else:
+                self.fire_frame_counter += 1
+                if self.fire_frame_counter >= self.fire_frame_delay:
+                    self.fire_frame_counter = 0
 
+                    spawn_factor = remaining / self.fire_duration
+                    num_particles_per_column = int(2 * spawn_factor)
+
+                    # if len(self.particles) < self.MAX_PARTICLES and num_particles_per_column > 0:
+                    if num_particles_per_column > 0:
+                        base_y = HEIGHT
+                        step = 5
+                        for x in range(0, WIDTH, step):
+                            for i in range(num_particles_per_column):
+                                flame_color = random.choice([(255, 100, 0), (255, 150, 50), (255, 200, 100)])
+                                self.particles.append(SmokeParticle(x + random.randint(-5, 5), base_y, flame_color, "flame"))
+             
+            if self.start_fire:          
+                if player.current_action != "dead":
+                    player.current_action = "dead"
+                    player.set_animation(self)                    
+                player.update({}, self)
+
+                # Always update & draw particles
+                for p in self.particles[:]:
+                    p.update()
+                    p.draw(screen)
+                    if p.life <= 0:
+                        self.particles.remove(p)
+            else:
+                if player.current_action != "idle":
+                    player.current_action = "idle"
+                    player.set_animation(self)
+                player.update({}, self)
+
+    def start_ground_fire(self):
+        self.start_fire = True
+        self.fire_start_time = None  # Reset the timer   
+        
+    def trigger_power_kick(self, ball, screen):
+        if self.power_kick:
+            ball_rect = ball.get_rect()
+
+            # Generate 5–10 new particles (reduce for better performance)
+            for _ in range(random.randint(5, 10)):
+                self.power_kick_particles.append({
+                    'position': [ball_rect.centerx, ball_rect.centery],
+                    'velocity': [random.uniform(-3, 3), random.uniform(-5, -1)],
+                    'lifetime': 30,
+                    'max_lifetime': 30  # Used to calculate color and size fade
+                })
+
+        # Update and draw each particle
+        for p in self.power_kick_particles[:]:
+            # Update position
+            p['position'][0] += p['velocity'][0]
+            p['position'][1] += p['velocity'][1]
+            p['velocity'][1] += 0.1  # gravity
+            p['lifetime'] -= 1
+
+            # Calculate color (fade from yellow to red)
+            progress = p['lifetime'] / p['max_lifetime']
+            r = int(255)
+            g = int(140 * progress)  # From 140 → 0
+            b = int(0)
+            color = (r, g, b)
+
+            # Calculate size (shrink over time)
+            radius = max(1, int(6 * progress))
+
+            # Draw with flicker
+            offset_x = random.randint(-1, 1)
+            offset_y = random.randint(-1, 1)
+            pygame.draw.circle(screen, color, (int(p['position'][0] + offset_x), int(p['position'][1] + offset_y)), radius)
+
+            # Remove dead particles
+            if p['lifetime'] <= 0:
+                self.power_kick_particles.remove(p)
+
+    def start_power_kick(self):
+        self.power_kick = True
+
+       

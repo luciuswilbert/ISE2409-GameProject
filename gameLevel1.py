@@ -34,18 +34,19 @@ def GameLevel1(screen):
                     player.current_action = "kick"
                 elif event.key == pygame.K_SPACE and player.is_grounded:
                     player.current_action = "jump"
+                    # bot.start_ground_fire()
                 elif event.key in CONTROL_KEYS.values():
                     player.current_action = "run"
-                player.set_animation()
+                player.set_animation(bot)
 
             elif event.type == pygame.KEYUP:
                 keys_pressed.discard(event.key)
                 if not keys_pressed:
                     player.current_action = "idle"
-                    player.set_animation()
+                    player.set_animation(bot)
 
         # Update game state for player
-        player.update(keys_pressed)
+        player.update(keys_pressed, bot)
         
         # Update game state for bot
         bot.auto_chase(ball)
@@ -59,6 +60,15 @@ def GameLevel1(screen):
 
         # Draw game elements
         arena.draw(screen, ball, player, bot)
+        
+        if bot.start_fire:
+            arena.apply_blur_effect_with_dark_top(screen)
+            
+        if player.power_kick_hit:
+            if player.current_action != "hurt":
+                player.current_action = "hurt"
+                player.set_animation(bot)                    
+            player.update(keys_pressed, bot)
         
         if goal_scored or dead_ball:
             # Reset positions here safely

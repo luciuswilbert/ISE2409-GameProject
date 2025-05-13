@@ -1,6 +1,7 @@
 import pygame
 from config import WIDTH, GROUND_Y, gravity
-from collision import resolve_ball_obj_collision, resolve_ball_player_collision
+from collision import resolve_ball_obj_collision, resolve_ball_player_collision, bot_power_kick_player_ball_collision
+from character import CharacterAnimation
 
 class Ball:
     def __init__(self):
@@ -51,10 +52,32 @@ class Ball:
         for rect in rects:
             resolve_ball_obj_collision(self.pos, self.vel, self.radius, rect, bounce_factor=0.8)  # Adjust bounce factor for walls
             
-        # Handle collisions with players
-        for player in player_objects:  # player_objects is a list of Player instances
-            player_rect = player.rect  # Access the player's rectangle
-            resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, bounce_factor=1)  # Correcting the call
+        # # Handle collisions with players
+        # if bot.power_kick:
+        #     for i, player in enumerate(player_objects):
+        #         if isinstance(player, CharacterAnimation):
+        #             player_rect = player.rect 
+        #             resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, bounce_factor=1)
+        #             del player_objects[i]
+        #             break  # Stop after removing the first one
+
+        
+        for player_object in player_objects:
+            player_rect = player_object.rect  # Access the player's rectangle
+            
+            if bot.power_kick and player_object != bot:
+                # resolve_power_kick_collision(self, self.vel, player_rect)
+                bot_power_kick_player_ball_collision(
+                    self.pos, self.vel, self.radius,
+                    player, bounce_factor=0.8,
+                    power_kick_strength=1,
+                    player_push_strength=100
+                )
+
+            else:
+                # player_objects is a list of Player instances
+                resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, bounce_factor=1)
+
         
         # Simulate rotational friction and update angle
         self.rotation_speed = self.vel[0] * 2
@@ -79,7 +102,7 @@ class Ball:
         rect = self.image.get_rect(center=(int(self.pos[0]), int(self.pos[1])))
         screen.blit(self.image, rect.topleft)
         
-        # pygame.draw.rect(screen, (255, 0, 0), self.get_rect(), 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.get_rect(), 2)
 
     def get_rect(self):
         return pygame.Rect(self.pos[0] - self.radius, self.pos[1] - self.radius, self.radius * 2, self.radius * 2)

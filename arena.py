@@ -1,7 +1,6 @@
 import pygame
 import time
-import sys
-from config import TOTAL_TIME
+from config import *
 
 class Arena:
     def __init__(self, level):
@@ -82,20 +81,24 @@ class Arena:
         flipped_left_net = pygame.transform.flip(self.football_net_img, True, False)
 
         screen.blit(self.background_img, (0, 0))
+        
+        bot.trigger_full_ground_fire(screen, character)
+        bot.trigger_power_kick(ball, screen)
+        
         screen.blit(flipped_left_net, self.left_net_rect.topleft) # Left net
         screen.blit(self.football_net_img, self.right_net_rect.topleft)  # Right net
         # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect, 2)
         # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect, 2)
         
-        # # Draw first rectangle (e.g., red, filled)
-        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_top_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_side_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
+        # Draw first rectangle (e.g., red, filled)
+        pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_top_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_side_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
 
-        # # # Draw second rectangle (e.g., green, outlined)
-        # pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
-        # pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
+        # # Draw second rectangle (e.g., green, outlined)
+        pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
+        pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
     
         self.draw_timer(screen)
         self.draw_score(screen)
@@ -117,4 +120,21 @@ class Arena:
             
             return  # Skip rest of the draw logic
         
- 
+    def apply_blur_effect_with_dark_top(self, screen):
+        # Step 1: Apply Blur
+        scale = 0.1  # Lower = more blur
+        small_size = (int(WIDTH * scale), int(HEIGHT * scale))
+        small_surface = pygame.transform.smoothscale(screen, small_size)
+        blurred_surface = pygame.transform.smoothscale(small_surface, (WIDTH, HEIGHT))
+        blurred_surface.set_alpha(128)
+        screen.blit(blurred_surface, (0, 0))
+
+        # Step 2: Create black-to-transparent gradient (top dark, bottom clear)
+        gradient = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        for y in range(HEIGHT):
+            alpha = int(150 * (1 - y / HEIGHT))  # Max alpha at top, 0 at bottom
+            color = (0, 0, 0, alpha)
+            pygame.draw.line(gradient, color, (0, y), (WIDTH, y))
+
+        # Step 3: Overlay the dark gradient
+        screen.blit(gradient, (0, 0))
