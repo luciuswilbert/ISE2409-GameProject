@@ -10,6 +10,7 @@ def resolve_ball_obj_collision(circle_pos, circle_vel, radius, rect, bounce_fact
 
     # If the ball is colliding with the rectangle
     if distance < radius:
+        collision_occurred = True
         if distance == 0:
             distance = 0.1  # Avoid division by zero if the ball is exactly at the corner
 
@@ -32,6 +33,10 @@ def resolve_ball_obj_collision(circle_pos, circle_vel, radius, rect, bounce_fact
         # Apply the bounce factor to adjust the velocity's magnitude
         circle_vel[0] *= bounce_factor
         circle_vel[1] *= bounce_factor
+        
+        return collision_occurred
+    
+    return False
 
 def resolve_ball_player_collision(circle_pos, circle_vel, radius, rect, bounce_factor):
     # Find the closest point on the rectangle to the ball's center
@@ -43,6 +48,7 @@ def resolve_ball_player_collision(circle_pos, circle_vel, radius, rect, bounce_f
 
     # If the ball is colliding with the rectangle
     if distance < radius:
+        collision_occurred = True
         if distance == 0:
             distance = 0.1  # Avoid division by zero if the ball is exactly at the corner
 
@@ -71,4 +77,7 @@ def resolve_ball_player_collision(circle_pos, circle_vel, radius, rect, bounce_f
             # boost_magnitude = 10 # Adjust this value for the desired minimum speed boost
             circle_vel[0] += nx * 8  # Apply a small boost in the direction of the collision normal
             circle_vel[1] += ny * 10
-
+            
+        return collision_occurred
+    
+    return False
