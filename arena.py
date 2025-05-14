@@ -1,8 +1,7 @@
 import random
 import pygame
 import time
-import sys
-from config import GROUND_Y, TOTAL_TIME, WIDTH
+from config import *
 from power_bar import PowerBar
 from sound_manager import play_sound
 
@@ -47,6 +46,7 @@ class Arena:
         self.ball_last_kicked_by_character = True
         self.time_out = False
         self.win = False
+        self.game_started = False
         
         # Add timer pausing (from first version)
         self.paused = False
@@ -69,6 +69,8 @@ class Arena:
         if self.paused:
             self.paused = False
             self.total_paused_time += time.time() - self.pause_start_time
+            # self.player_power_bar.resume()
+            # self.enemy_power_bar.resume()
 
     def draw_timer(self, screen):
         """Draw the game timer with pause support"""
@@ -192,7 +194,7 @@ class Arena:
                 
         return False
         
-    def update(self):
+    def update(self, bot):
         """Update game state including celebrations and power bars"""
         if self.celebrating:
             current_time = time.time()
@@ -205,13 +207,16 @@ class Arena:
         # Update power bars
         self.player_power_bar.update()
         self.enemy_power_bar.update()
-
-        # Enemy AI for using power
-        if (self.enemy_power_bar.is_full and 
-            not self.celebrating and 
-            random.random() < 0.02):  # 2% chance per frame
+            
+        if (self.enemy_power_bar.is_full and not self.celebrating and bot.current_action == "kick" and random.random() < 0.5):  # 2% chance per frame
             self.enemy_power_bar.use_power()
-            print("Enemy used special power!")
+            
+            if random.random() < 0.5:
+                bot.start_power_kick()
+                print("Enemy used special power: Power Kick!")
+            else:
+                bot.start_ground_fire()
+                print("Enemy used special power: Ground Fire!")
 
 
     def draw_hint(self, screen, hint_text):
@@ -234,10 +239,28 @@ class Arena:
         flipped_left_net = pygame.transform.flip(self.football_net_img, True, False)
 
         screen.blit(self.background_img, (0, 0))
+        
+        bot.trigger_full_ground_fire(screen, character)
+        bot.trigger_power_kick(ball, screen)
+        
+        screen.blit(flipped_left_net, self.left_net_rect.topleft) # Left net
         screen.blit(flipped_left_net, self.left_net_rect.topleft)  # Left net
         screen.blit(self.football_net_img, self.right_net_rect.topleft)  # Right net
         
         self.draw_score(screen)
+        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect, 2)
+        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect, 2)
+        
+        # Draw first rectangle (e.g., red, filled)
+        pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_top_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_side_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
+
+        # # Draw second rectangle (e.g., green, outlined)
+        pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
+        pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
+    
         self.draw_timer(screen)
         
         ball.draw(screen)
@@ -246,6 +269,7 @@ class Arena:
 
         # Draw celebration text
         if self.celebrating:
+            print("Celebration in progress!")
             font = pygame.font.SysFont(None, 100)
             goal_text = font.render(self.celebration_message, True, (255, 215, 0))  # Gold text
             screen.blit(goal_text, (400 - goal_text.get_width() // 2, 250))
@@ -275,3 +299,22 @@ class Arena:
         # Hints are now only shown when the power bar is full
         
         return self.win
+        
+    def apply_blur_effect_with_dark_top(self, screen):
+        # Step 1: Apply Blur
+        scale = 0.1  # Lower = more blur
+        small_size = (int(WIDTH * scale), int(HEIGHT * scale))
+        small_surface = pygame.transform.smoothscale(screen, small_size)
+        blurred_surface = pygame.transform.smoothscale(small_surface, (WIDTH, HEIGHT))
+        blurred_surface.set_alpha(128)
+        screen.blit(blurred_surface, (0, 0))
+
+        # Step 2: Create black-to-transparent gradient (top dark, bottom clear)
+        gradient = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        for y in range(HEIGHT):
+            alpha = int(150 * (1 - y / HEIGHT))  # Max alpha at top, 0 at bottom
+            color = (0, 0, 0, alpha)
+            pygame.draw.line(gradient, color, (0, y), (WIDTH, y))
+
+        # Step 3: Overlay the dark gradient
+        screen.blit(gradient, (0, 0))

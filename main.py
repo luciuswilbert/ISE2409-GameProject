@@ -1,5 +1,6 @@
 import pygame
 import sys
+import pygame.mixer
 
 from config import *
 from gameLevel1 import GameLevel1

@@ -11,6 +11,7 @@ class PowerBar:
         self.cooldown_duration = 5  # 5 seconds total cooldown
         self.current_image_index = 5  # Start at powerbar_6 (empty)
         self.is_full = False
+        self.paused = False
         
         # Load all 6 power bar images
         self.images = []
@@ -55,7 +56,7 @@ class PowerBar:
 
     def update(self):
         """Update power bar state with countdown animation"""
-        if not self.is_full:
+        if not self.is_full and not self.paused:
             current_time = time.time()
             elapsed = current_time - self.last_update_time
             
@@ -116,3 +117,14 @@ class PowerBar:
     def can_use_power(self):
         """Check if power can be used"""
         return self.is_full
+    
+    def pause(self):
+        """Pause the power bar cooldown"""
+        if not self.paused:
+            self.paused = True
+            self.pause_time = time.time()
+
+    def resume(self):
+        """Resume the power bar cooldown"""
+        if self.paused:
+            self.paused = False

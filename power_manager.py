@@ -36,6 +36,15 @@ class PowerManager:
         self.is_in_animation_sequence = False
         self.complete_animation_regardless = False
         self.animation_locked = False
+        self.is_vine_active = False
+        self.vine_frame_index = 0
+        self.vine_animation_timer = 0
+        self.vine_animation_duration = 60
+        self.vine_hold_duration = 180
+        self.vine_position = [100, GROUND_Y]
+        self.vine_cooldown = 0
+        self.vine_cooldown_max = 300
+        self.vine_rect = None
         
         # Load power animation
         self.power_frames = []
@@ -71,15 +80,6 @@ class PowerManager:
                 except pygame.error:
                     print(f"❌ Error: Could not load vine image {img_path}")
         
-        self.is_vine_active = False
-        self.vine_frame_index = 0
-        self.vine_animation_timer = 0
-        self.vine_animation_duration = 60
-        self.vine_hold_duration = 180
-        self.vine_position = [100, GROUND_Y]
-        self.vine_cooldown = 0
-        self.vine_cooldown_max = 300
-        self.vine_rect = None
     
     def update(self, keys_pressed):
         # Update power bar
@@ -330,7 +330,7 @@ class PowerManager:
                 dy = dy / magnitude * 8
             
             # Apply the power shot
-            self.power_ball.vel[0] = dx
+            self.power_ball.vel[0] = dx * 3
             self.power_ball.vel[1] = dy
             
             # Activate special effect
@@ -339,7 +339,7 @@ class PowerManager:
             else:
                 self.power_ball.activate_special_effect()
     
-    def _end_power_mode(self):
+    def _end_power_mode(self, bot=None):
         """Helper to safely end power mode and return to idle"""
         self.player.jump_height = 0
         self.is_power_active = False
@@ -355,7 +355,7 @@ class PowerManager:
         self.is_in_animation_sequence = False
         self.complete_animation_regardless = False
         self.animation_locked = False
-        self.player.set_animation()
+        self.player.set_animation(bot)
         
         # Resume bot and timer
         if self.bot.is_paused:

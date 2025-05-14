@@ -21,7 +21,7 @@ CONTROL_KEYS = {"left": pygame.K_a, "right": pygame.K_d, "jump": pygame.K_SPACE}
 gravity = 0.5
 
 # Total Game Time
-TOTAL_TIME = 65  # seconds
+TOTAL_TIME = 60  # seconds
 
 # Debug settings
 DEBUG_MODE = False  # Set to True to enable collision visualization

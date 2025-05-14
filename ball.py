@@ -1,7 +1,8 @@
 import math
 import pygame
 from config import WIDTH, GROUND_Y, gravity, DEBUG_MODE
-from collision import resolve_ball_obj_collision, resolve_ball_player_collision
+from collision import resolve_ball_obj_collision, resolve_ball_player_collision, bot_power_kick_player_ball_collision
+from character import CharacterAnimation
 import random
 from sound_manager import play_sound
 
@@ -11,9 +12,11 @@ class Ball:
         self.pos = [WIDTH // 2, 100]
         self.vel = [0, 0] # x for horizontal, y for vertical speed
         self.angle = 0  # Rotation angle in degrees
-        self.bounciness = -0.7  # Fixed bounciness for testing
+        self.bounciness = -0.9  # Fixed bounciness for testing
         self.prev_y = self.pos[1]
         self.ground_collision_threshold = 2.0
+        self.HORIZONTAL_FORCE_SCALE = 0.6
+        self.VERTICAL_FORCE_SCALE = 1
         
         # Track who kicked the ball last
         self.last_kicked_by_player = True  # True for player/character, False for demon/bot
@@ -128,11 +131,11 @@ class Ball:
                 
                 if is_kicking:
                     # Set velocity directly rather than adding
-                    self.vel[0] = kick_direction * 8
-                    self.vel[1] = -4  # Add upward component
+                    self.vel[0] = kick_direction * 8 * self.HORIZONTAL_FORCE_SCALE
+                    self.vel[1] = -4 * self.VERTICAL_FORCE_SCALE # Add upward component
                 else:
-                    self.vel[0] = kick_direction * 4
-                    self.vel[1] = -2
+                    self.vel[0] = kick_direction * 4 * self.HORIZONTAL_FORCE_SCALE
+                    self.vel[1] = -2 * self.VERTICAL_FORCE_SCALE
                 
                 print("MOVING STATIONARY BALL: Direction", "right" if kick_direction > 0 else "left")
                 play_sound('ball_kick')
@@ -140,15 +143,15 @@ class Ball:
                 if is_kicking:
                     # Stronger force for kicks
                     force_magnitude = 10  # Increased kick strength
-                    self.vel[0] += (dx / distance) * force_magnitude
-                    self.vel[1] += (dy / distance) * force_magnitude
+                    self.vel[0] += (dx / distance) * force_magnitude * self.HORIZONTAL_FORCE_SCALE
+                    self.vel[1] += (dy / distance) * force_magnitude * self.VERTICAL_FORCE_SCALE
                     print("NORMAL KICK: Ball kicked by CHARACTER")
                     play_sound('ball_kick')
                 else:
                     # Weaker force for just touching
                     force_magnitude = 5  # Gentle touch force
-                    self.vel[0] += (dx / distance) * force_magnitude
-                    self.vel[1] += (dy / distance) * force_magnitude * 0.5
+                    self.vel[0] += (dx / distance) * force_magnitude * self.HORIZONTAL_FORCE_SCALE
+                    self.vel[1] += (dy / distance) * force_magnitude * 0.5 * self.VERTICAL_FORCE_SCALE
                     print("TOUCH: Ball touched by CHARACTER")
                     play_sound('ball_kick')
             
@@ -186,11 +189,11 @@ class Ball:
                 kick_direction = 1 if bot_facing_right else -1
                 
                 if is_kicking:
-                    self.vel[0] = kick_direction * 12
-                    self.vel[1] = -6  # Higher upward component for demon
+                    self.vel[0] = kick_direction * 12 * self.HORIZONTAL_FORCE_SCALE
+                    self.vel[1] = -6 * self.VERTICAL_FORCE_SCALE # Higher upward component for demon
                 else:
-                    self.vel[0] = kick_direction * 6
-                    self.vel[1] = -3
+                    self.vel[0] = kick_direction * 6 * self.HORIZONTAL_FORCE_SCALE
+                    self.vel[1] = -3 * self.VERTICAL_FORCE_SCALE
                     
                 print("BOT MOVING STATIONARY BALL: Direction", "right" if kick_direction > 0 else "left")
                 play_sound('ball_kick')
@@ -203,14 +206,14 @@ class Ball:
                     if is_ball_on_ground:
                         # Apply horizontal force based on bot direction
                         kick_direction = -1 if bot.is_flipped else 1
-                        self.vel[0] = kick_direction * force_magnitude * 0.7
+                        self.vel[0] = kick_direction * force_magnitude * 0.7 * self.HORIZONTAL_FORCE_SCALE
                         
                         # Strong upward force - sky-high kick
-                        self.vel[1] = -force_magnitude * 1.2
+                        self.vel[1] = -force_magnitude * 1.2 * self.VERTICAL_FORCE_SCALE
                         print("SKY KICK: Ball kicked high into the air by DEMON")
                     else:
-                        self.vel[0] += norm_dx * force_magnitude
-                        self.vel[1] += norm_dy * force_magnitude
+                        self.vel[0] += norm_dx * force_magnitude * self.HORIZONTAL_FORCE_SCALE
+                        self.vel[1] += norm_dy * force_magnitude * self.VERTICAL_FORCE_SCALE
                         print("NORMAL KICK: Ball kicked by DEMON")
                     
                     play_sound('ball_kick')
@@ -219,22 +222,22 @@ class Ball:
                     force_magnitude = 6  # Slightly increased minimum force
                     
                     # Current velocity magnitude
-                    current_vel_mag = (self.vel[0]**2 + self.vel[1]**2)**0.5
+                    current_vel_mag = (self.vel[0]**2 * self.HORIZONTAL_FORCE_SCALE + self.vel[1]**2 * self.VERTICAL_FORCE_SCALE)**0.5
                     
                     # If ball is on ground, add some upward force even for touch
                     if is_ball_on_ground:
                         self.vel[0] += norm_dx * force_magnitude
-                        self.vel[1] = -force_magnitude * 0.7  # Increased upward bounce for touch
+                        self.vel[1] = -force_magnitude * 0.7  * self.VERTICAL_FORCE_SCALE # Increased upward bounce for touch
                         print("GROUND TOUCH: Ball nudged upward by DEMON")
                     else:
                         # IMPROVED: If current velocity is low, apply a minimum force
                         if current_vel_mag < 2.0:
-                            self.vel[0] = norm_dx * force_magnitude
-                            self.vel[1] = norm_dy * force_magnitude * 0.7
+                            self.vel[0] = norm_dx * force_magnitude *  self.HORIZONTAL_FORCE_SCALE
+                            self.vel[1] = norm_dy * force_magnitude * 0.7 * self.VERTICAL_FORCE_SCALE
                         else:
                             # Otherwise add to current velocity
-                            self.vel[0] += norm_dx * force_magnitude
-                            self.vel[1] += norm_dy * force_magnitude * 0.6
+                            self.vel[0] += norm_dx * force_magnitude * self.HORIZONTAL_FORCE_SCALE
+                            self.vel[1] += norm_dy * force_magnitude * 0.6 * self.VERTICAL_FORCE_SCALE
                         
                         print("TOUCH: Ball touched by DEMON")
                     
@@ -261,27 +264,27 @@ class Ball:
             play_sound('ball_kick')
             
             # Always make the ball bounce to the right
-            self.vel[0] = abs(self.vel[0]) * 1.5  # Force positive X velocity (right direction)
+            self.vel[0] = abs(self.vel[0]) * 1.5  * self.HORIZONTAL_FORCE_SCALE # Force positive X velocity (right direction)
             if self.vel[0] < 5:  # Ensure minimum speed
-                self.vel[0] = 5
+                self.vel[0] = 5 *  self.HORIZONTAL_FORCE_SCALE
             
             # Position the ball to the right of the vine to prevent multiple collisions
             self.pos[0] = vine_rect.right + self.radius + 5
             
             # Add upward bounce effect
             if self.vel[1] > 0:  # Ball moving down
-                self.vel[1] = -abs(self.vel[1]) * 0.8
+                self.vel[1] = -abs(self.vel[1]) * 0.8 * self.VERTICAL_FORCE_SCALE
             else:  # Ball moving up or stationary
-                self.vel[1] = -5  # Give it an upward bounce
+                self.vel[1] = -5  * self.VERTICAL_FORCE_SCALE# Give it an upward bounce
             
             # Add some randomness to make it more realistic
-            self.vel[0] += random.uniform(0, 3)  # Only add positive randomness to keep it going right
+            self.vel[0] += random.uniform(0, 3) *  self.HORIZONTAL_FORCE_SCALE # Only add positive randomness to keep it going right
             self.vel[1] += random.uniform(-2, 2)
             
             # If special effect is active, maintain its properties
             if self.special_effect_active:
                 # Keep the special effect but adjust direction
-                self.vel[0] = abs(self.vel[0]) * 1.2
+                self.vel[0] = abs(self.vel[0]) * 1.2 * self.HORIZONTAL_FORCE_SCALE
 
             self.set_last_touched(True)
             
@@ -311,10 +314,10 @@ class Ball:
                 self.special_effect_timer = max(120, self.special_effect_timer)
         
         # Update the ball's direction based on velocity
-        vel_magnitude = (self.vel[0]**2 + self.vel[1]**2)**0.5
+        vel_magnitude = (self.vel[0]**2 * self.HORIZONTAL_FORCE_SCALE + self.vel[1]**2 * self.VERTICAL_FORCE_SCALE)**0.5
         if vel_magnitude > 0.5:  # Only update direction if ball is moving
             # Calculate angle in degrees (0-360)
-            self.direction = math.degrees(math.atan2(self.vel[1], self.vel[0])) % 360
+            self.direction = math.degrees(math.atan2(self.vel[1] * self.VERTICAL_FORCE_SCALE, self.vel[0] * self.HORIZONTAL_FORCE_SCALE)) % 360
         
         # Store previous position for trail effect
         if self.special_effect_active:
@@ -383,7 +386,7 @@ class Ball:
                 self.special_effect_active = False
                 self.previous_positions = []  # Clear trail when effect ends
                 self.particles = []  # Clear particles
-                self.bounciness = -0.7  # Reset bounciness to normal
+                self.bounciness = -0.8  # Reset bounciness to normal
                 self.character_ref = None  # Clear character reference
         else:
             # Clear trail if effect is not active
@@ -393,25 +396,25 @@ class Ball:
         # Normal physics updates
         if self.special_effect_active:
             # Almost no gravity for special effect to maintain a flat trajectory
-            self.vel[1] += gravity * 0.1  # Just 10% of normal gravity
+            self.vel[1] += gravity * 0.1 * self.VERTICAL_FORCE_SCALE # Just 10% of normal gravity
             
             # Add a slight downward force to keep the shot low to the ground
             # This helps ensure the ball stays close to the ground
             if self.pos[1] < GROUND_Y - self.radius - 50:  # If ball is more than 50px above ground
-                self.vel[1] += 0.15  # Gentle downward push to keep shot low
+                self.vel[1] += 0.15 * self.VERTICAL_FORCE_SCALE # Gentle downward push to keep shot low
         else:
             # Normal gravity
-            self.vel[1] += gravity
+            self.vel[1] += gravity * self.VERTICAL_FORCE_SCALE
         
         # If special effect is active, adjust the ball's movement speed
         if self.special_effect_active:
             speed_factor = 1.2  # Ball moves at 120% normal speed
-            self.pos[0] += self.vel[0] * speed_factor
-            self.pos[1] += self.vel[1] * speed_factor
+            self.pos[0] += self.vel[0] * speed_factor *  self.HORIZONTAL_FORCE_SCALE
+            self.pos[1] += self.vel[1] * speed_factor * self.VERTICAL_FORCE_SCALE
         else:
             # Normal movement
-            self.pos[0] += self.vel[0]
-            self.pos[1] += self.vel[1]
+            self.pos[0] += self.vel[0] * self.HORIZONTAL_FORCE_SCALE
+            self.pos[1] += self.vel[1] * self.VERTICAL_FORCE_SCALE
 
         # Bounce off ground
         if self.pos[1] >= GROUND_Y - self.radius:
@@ -423,12 +426,12 @@ class Ball:
             
             if self.special_effect_active:
                 # Almost no bounce for special effect
-                self.vel[1] *= -0.1  # Minimal vertical bounce
-                self.vel[0] *= 0.98  # Keep almost all horizontal momentum
+                self.vel[1] *= -0.1 * self.VERTICAL_FORCE_SCALE # Minimal vertical bounce
+                self.vel[0] *= 0.98 * self.HORIZONTAL_FORCE_SCALE # Keep almost all horizontal momentum
             else:
                 # Normal bounce
-                self.vel[1] *= self.bounciness  # Normal bounce
-                self.vel[0] *= 0.99  # Normal horizontal friction
+                self.vel[1] *= self.bounciness * self.VERTICAL_FORCE_SCALE # Normal bounce
+                self.vel[0] *= 0.99 * self.HORIZONTAL_FORCE_SCALE # Normal horizontal friction
                 
                 # Play sound if it's a significant bounce
                 if significant_bounce:
@@ -441,7 +444,7 @@ class Ball:
         # Bounce off walls (edges of the screen)
         if self.pos[0] <= self.radius:
             self.pos[0] = self.radius
-            self.vel[0] *= -1
+            self.vel[0] *= -1 * self.HORIZONTAL_FORCE_SCALE
             play_sound('ball_ground')  # Use same sound for wall bounce
             
             # Add collision flash for visualization in debug mode
@@ -450,7 +453,7 @@ class Ball:
                 
         elif self.pos[0] >= WIDTH - self.radius:
             self.pos[0] = WIDTH - self.radius
-            self.vel[0] *= -1
+            self.vel[0] *= -1 * self.HORIZONTAL_FORCE_SCALE
             play_sound('ball_ground')  # Use same sound for wall bounce
             
             # Add collision flash for visualization in debug mode
@@ -458,23 +461,45 @@ class Ball:
                 self.collision_flash = 5
             
         for rect in rects:
-            collision_before = resolve_ball_obj_collision(self.pos, self.vel, self.radius, rect, bounce_factor=0.8)
+            collision_before = resolve_ball_obj_collision(self.pos, self.vel, self.radius, rect, bounce_factor=0.5)
             if collision_before and DEBUG_MODE:
                 self.collision_flash = 5
             
-        # Handle collisions with players
-        for player_obj in player_objects:
-            player_rect = player_obj.rect
-            collision_before = resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, bounce_factor=1)
-            if collision_before and DEBUG_MODE:
-                self.collision_flash = 5
+        # # Handle collisions with players
+        # if bot.power_kick:
+        #     for i, player in enumerate(player_objects):
+        #         if isinstance(player, CharacterAnimation):
+        #             player_rect = player.rect 
+        #             resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, bounce_factor=1)
+        #             del player_objects[i]
+        #             break  # Stop after removing the first one
+
+        
+        for player_object in player_objects:
+            player_rect = player_object.rect  # Access the player's rectangle
+            
+            if bot.power_kick and player_object != bot:
+                # resolve_power_kick_collision(self, self.vel, player_rect)
+                bot_power_kick_player_ball_collision(
+                    self.pos, self.vel, self.radius,
+                    player, bounce_factor=0.5,
+                    power_kick_strength=1,
+                    player_push_strength=100
+                )
+            # elif player:
+            #     # player_objects is a list of Player instances
+            #     resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.8, vertical_bounce_factor=0.8)
+            else:
+                # player_objects is a list of Player instances
+                resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.5, vertical_bounce_factor=0.8)
+
         
         # Simulate rotational friction and update angle
         rotation_speed_factor = 2.0
         if self.special_effect_active:
             rotation_speed_factor = 3.0  # REDUCED from 4.0 to 3.0 for slower rotation
             
-        self.rotation_speed = self.vel[0] * rotation_speed_factor
+        self.rotation_speed = self.vel[0] * rotation_speed_factor *  self.HORIZONTAL_FORCE_SCALE
         self.rotation_speed *= 0.90  # decay factor
         self.angle += self.rotation_speed
         self.angle %= 360
@@ -519,7 +544,7 @@ class Ball:
                 print("POWER SHOT: Ball kicked by CHARACTER")
             
             # Initial velocity vector modification for a low, direct shot
-            speed = (self.vel[0]**2 + self.vel[1]**2)**0.5
+            speed = (self.vel[0]**2 * self.HORIZONTAL_FORCE_SCALE + self.vel[1]**2 * self.VERTICAL_FORCE_SCALE)**0.5
             if speed > 0:
                 # Get the current direction as normalized vector
                 dir_x = self.vel[0] / speed
@@ -541,12 +566,12 @@ class Ball:
                 
                 # Apply a speed boost in this modified direction
                 new_speed = speed * 1.8  
-                self.vel[0] = dir_x * new_speed
-                self.vel[1] = dir_y * new_speed
+                self.vel[0] = dir_x * new_speed * self.HORIZONTAL_FORCE_SCALE
+                self.vel[1] = dir_y * new_speed * self.VERTICAL_FORCE_SCALE
             else:
                 # If ball isn't moving, give it a default horizontal direction
-                self.vel[0] = 6.0  # Moderate horizontal speed
-                self.vel[1] = 1.0   # Slight downward component
+                self.vel[0] = 6.0 * self.HORIZONTAL_FORCE_SCALE# Moderate horizontal speed
+                self.vel[1] = 1.0 * self.VERTICAL_FORCE_SCALE # Slight downward component
             
             # Very little bounce for more direct shots
             self.bounciness = -0.1  # Almost no bounce
@@ -677,7 +702,7 @@ class Ball:
             
             # Show velocity as an arrow
             if abs(self.vel[0]) > 0.1 or abs(self.vel[1]) > 0.1:
-                vel_magnitude = math.sqrt(self.vel[0]**2 + self.vel[1]**2)
+                vel_magnitude = math.sqrt(self.vel[0]**2 * self.HORIZONTAL_FORCE_SCALE + self.vel[1]**2 * self.VERTICAL_FORCE_SCALE)
                 arrow_length = min(50, vel_magnitude * 5)  # Scale arrow but cap at 50px
                 arrow_dir_x = self.vel[0] / vel_magnitude
                 arrow_dir_y = self.vel[1] / vel_magnitude
@@ -708,6 +733,7 @@ class Ball:
         return pygame.Rect(self.pos[0] - self.radius, self.pos[1] - self.radius, self.radius * 2, self.radius * 2)
 
     def reset(self):
+        print("Ball reset called")
         # Don't reset if character is in locked animation
         if self.character_ref and hasattr(self.character_ref, 'animation_locked') and self.character_ref.animation_locked:
             return False
@@ -722,7 +748,7 @@ class Ball:
         self.pos = [WIDTH // 2, 100]  # This is the same as in __init__ - ball drops from sky
         self.vel = [0, 0]  # Stop all movement
         self.angle = 0
-        self.bounciness = -0.7
+        self.bounciness = -0.8
         
         # Reset special effects
         self.special_effect_active = False
