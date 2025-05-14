@@ -482,6 +482,10 @@ def move_player_to_lucifer(screen, player, bot, background):
 def orb_statue_scene(screen):
     clock = pygame.time.Clock()
 
+    # Add background music
+    pygame.mixer.music.load("storyscene/graveyardSound.mp3") 
+    pygame.mixer.music.play(-1)  
+
     # Load both backgrounds
     orb_present = pygame.image.load("storyscene/orbAtLucifer.png").convert()
     orb_present = pygame.transform.scale(orb_present, (WIDTH, HEIGHT))
@@ -541,12 +545,17 @@ def orb_statue_scene(screen):
 
         if orb_collected:
             pygame.time.wait(1000)
+            pygame.mixer.music.fadeout(1000)
             fade_to_black(screen)
             chaos_statue_scene(screen)
             return
 
 def chaos_statue_scene(screen):
     clock = pygame.time.Clock()
+
+    # Add background music
+    pygame.mixer.music.load("storyscene/loudThunder.mp3") 
+    pygame.mixer.music.play(-1) 
 
     # Load both backgrounds
     chaos_bg = pygame.image.load("storyscene/stormBackToFirstBackground.png").convert()
@@ -559,6 +568,7 @@ def chaos_statue_scene(screen):
     player = CharacterAnimation()
     player.position_x = WIDTH - 120
     player.position_y = 400
+    
     player.set_animation()
 
     statue_trigger = pygame.Rect((WIDTH // 2) - 50, 380, 100, 120)
@@ -597,14 +607,42 @@ def chaos_statue_scene(screen):
         player_rect = player.rect
         if player_rect.colliderect(statue_trigger):
             orb_placed = True
+            pygame.mixer.music.fadeout(1000)
+
 
         # Draw scene
         if orb_placed:
             fade_to_black(screen, duration=1200)
             screen.blit(orb_restored_bg, (0, 0))  # change background
-            player.draw(screen)
+            pygame.mixer.music.load("storyscene/birdsChirping.mp3") 
+            pygame.mixer.music.play(-1) 
+            pygame.mixer.music.load("storyscene/Ending1.mp3")
+            pygame.mixer.music.play(0)
+            
+            # Keep showing background while voice plays
+            screen.blit(orb_restored_bg, (0, 0))
             pygame.display.flip()
-            pygame.time.wait(2000)
+            pygame.time.wait(25000)  # Wait for voice to finish
+            
+            fade_to_black(screen, duration=1500)
+            
+            # Create static flying dragon
+            dragon = BotLevel2()
+            dragon.position_x = 25
+            dragon.position_y = 100
+            dragon.current_action = "fly"
+            dragon.is_flipped = False
+            dragon.set_animation()
+
+            # Show final scene with animated flying dragon
+            end_time = pygame.time.get_ticks() + 5000  # 5 seconds duration
+            while pygame.time.get_ticks() < end_time:
+                screen.blit(orb_restored_bg, (0, 0))
+                dragon.update()  # This will cycle through fly animation frames
+                dragon.draw(screen)
+                pygame.display.flip()
+                clock.tick(60)
+            
             fade_to_black(screen, duration=1500)
             return
 
@@ -614,47 +652,47 @@ def chaos_statue_scene(screen):
         clock.tick(60)
 
 
-# Start menu and story intro
-play_first_video(screen)
-play_intro_scene(screen)
-screen.fill((0, 0, 0))
-pygame.display.flip()
-pygame.time.delay(200)
+# # Start menu and story intro
+# play_first_video(screen)
+# play_intro_scene(screen)
+# screen.fill((0, 0, 0))
+# pygame.display.flip()
+# pygame.time.delay(200)
 
-# Game level 1
-while True:
-    if GameLevel1(screen):       
-        break # If player wins level 1, break the loop to transition to level 2
-    else:
-        # If player loses level 1, show restart menu
-        # If player chooses NOT to restart level 1, quit the game
-        pygame.quit()
-        sys.exit()
+# # Game level 1
+# while True:
+#     if GameLevel1(screen):       
+#         break # If player wins level 1, break the loop to transition to level 2
+#     else:
+#         # If player loses level 1, show restart menu
+#         # If player chooses NOT to restart level 1, quit the game
+#         pygame.quit()
+#         sys.exit()
 
-# Transition to level 2
-transition_bg = pygame.image.load("images/background/fire_animatiaon.gif")
-transition_bg = pygame.transform.scale(transition_bg, (WIDTH, HEIGHT))
+# # Transition to level 2
+# transition_bg = pygame.image.load("images/background/fire_animatiaon.gif")
+# transition_bg = pygame.transform.scale(transition_bg, (WIDTH, HEIGHT))
 
-# play the shake
-screen_shake_effect(screen, transition_bg)
+# # play the shake
+# screen_shake_effect(screen, transition_bg)
 
-pygame.mixer.init()
-pygame.mixer.music.load("TransitionLv1Lv2/goingToCastle.mp3")  # replace with your path
-pygame.mixer.music.play()
+# pygame.mixer.init()
+# pygame.mixer.music.load("TransitionLv1Lv2/goingToCastle.mp3")  # replace with your path
+# pygame.mixer.music.play()
 
-castle_zoom_out(screen, "TransitionLv1Lv2/CastleScene.png", duration_ms=12000)
-fade_to_black(screen, duration=1000)
-pygame.mixer.music.stop()
+# castle_zoom_out(screen, "TransitionLv1Lv2/CastleScene.png", duration_ms=12000)
+# fade_to_black(screen, duration=1000)
+# pygame.mixer.music.stop()
 
-gate_entry_scene(screen, "TransitionLv1Lv2/castle.png")
+# gate_entry_scene(screen, "TransitionLv1Lv2/castle.png")
 
-throne_room_scene(screen)
+# throne_room_scene(screen)
 
-throne_room_dialogue(screen)
+# throne_room_dialogue(screen)
 
 
-# Game level 2
-GameLevel2(screen)
+# # Game level 2
+# GameLevel2(screen)
 
 # Story outro
 throne_room_dialogue_after(screen)
