@@ -46,7 +46,7 @@ class PowerManager:
                 img = pygame.transform.scale(img, (150, 200))
                 self.power_frames.append(img)
             except pygame.error:
-                print(f"❌ Error: Could not load power frame {img_path}")
+                pass
         
         # Load kick animation
         self.kick_frames = []
@@ -57,29 +57,28 @@ class PowerManager:
                 img = pygame.transform.scale(img, (150, 200))
                 self.kick_frames.append(img)
             except pygame.error:
-                print(f"❌ Error: Could not load kick frame {frame}")
+                pass
         
         # Vine power attributes - MODIFIED: Only load if level > 1
         self.vine_frames = []
         if self.level > 1:  # ADDED: Level check for vine frames
             for i in range(1, 6):
-                img_path = r'images/vine/vine'+ str(i) + ".png"
+                # FIXED: Use relative path instead of absolute path
+                img_path = f'images/Vine/vine{str(i)}.png'
                 try:
                     img = pygame.image.load(img_path).convert_alpha()
                     img = pygame.transform.scale(img, (80, 200))
                     self.vine_frames.append(img)
                 except pygame.error:
-                    print(f"❌ Error: Could not load vine image {img_path}")
+                    pass
         
+        # MODIFIED: Support for multiple vines
         self.is_vine_active = False
-        self.vine_frame_index = 0
-        self.vine_animation_timer = 0
-        self.vine_animation_duration = 60
-        self.vine_hold_duration = 180
-        self.vine_position = [100, GROUND_Y]
+        self.vines = []  # List to store multiple vines
+        self.max_vines = 3  # Maximum number of vines allowed at once
+        self.vine_spacing = 100  # Horizontal spacing between vines
         self.vine_cooldown = 0
         self.vine_cooldown_max = 300
-        self.vine_rect = None
     
     def update(self, keys_pressed):
         # Update power bar
@@ -98,16 +97,14 @@ class PowerManager:
         if self.is_power_active:
             self.update_power_shot()
         
-        # Update vine
-        if self.is_vine_active:
-            self.update_vine()
+        # Update all vines
+        self.update_vines()
     
     def activate_power(self):
         """Activate power shot - checks power bar"""
         if self.power_bar.can_use_power() and self.player.is_grounded and not self.is_power_active:
             # Use the power from the power bar
             if self.power_bar.use_power():
-                print("Power ability activated!")
                 self.is_power_active = True
                 self.power_ball = self.ball
                 self.is_carrying_ball = True
@@ -137,45 +134,69 @@ class PowerManager:
                 # Pause bot and timer
                 self.bot.pause()
                 self.arena.pause_timer()
-                print("Character teleported to hover position")
                 return True
         return False
     
     def activate_vine(self):
-        """Activate vine power - checks power bar"""
-        if self.level == 1:  # ADDED: Level check
+        """Activate vine power - checks power bar and creates more concentrated vines"""
+        if self.level == 1:  # Level check
             return False
             
-        if self.power_bar.can_use_power() and not self.is_vine_active and self.vine_frames:
+        if self.power_bar.can_use_power() and len(self.vines) < self.max_vines and self.vine_frames:
             # Use the power from the power bar
             if self.power_bar.use_power():
                 play_sound('vine_power')
-                print("Vine power activated!")
                 self.is_vine_active = True
-                self.vine_animation_timer = 0
-                self.vine_frame_index = 0
-                self.vine_position = [100, GROUND_Y]
                 
-                # Create collision rect
-                vine_height = 200
-                vine_width = 100
-                self.vine_rect = pygame.Rect(
-                    self.vine_position[0] - vine_width//2,
-                    self.vine_position[1] - vine_height,
-                    vine_width,
-                    vine_height
-                )
+                # Create base position for the new vine group
+                base_x = 50 + (len(self.vines) * self.vine_spacing)
                 
+                # Create the main vine - INCREASED width from 80 to 100
+                main_vine = {
+                    'animation_timer': 0,
+                    'frame_index': 0,
+                    'position': [base_x, GROUND_Y],
+                    'rect': pygame.Rect(base_x - 50, GROUND_Y - 200, 100, 200),  # Wider rect
+                    'animation_duration': 60,
+                    'hold_duration': 180,
+                    'active': True
+                }
+                
+                # INCREASED: Create more side vines (5 instead of 2) with smaller spacing
+                side_vines = []
+                
+                # Create 5 side vines with smaller spacing between them
+                side_positions = [-60, -30, 0, 30, 60]  # Closer together
+                
+                for offset in side_positions:
+                    side_vine = {
+                        'animation_timer': 0,
+                        'frame_index': 0,
+                        'position': [base_x + offset, GROUND_Y],
+                        'rect': pygame.Rect(base_x + offset - 25, GROUND_Y - 180, 50, 180),
+                        'animation_duration': 70 + random.randint(-10, 10),  # Varied growth speed
+                        'hold_duration': 180,
+                        'active': True,
+                        'scale': 0.7 + random.uniform(-0.1, 0.1)  # Varied scales
+                    }
+                    side_vines.append(side_vine)
+                
+                # Add all vines to the list
+                vine_group = {
+                    'main': main_vine,
+                    'sides': side_vines
+                }
+                
+                self.vines.append(vine_group)
                 return True
         return False
-    
+
     def update_power_shot(self):
         """Update power shot animation and physics - FIXED"""
         # Power timer to force end if needed
         self.power_timer += 1
         if self.power_timer > self.power_duration:
             self._end_power_mode()
-            print("Forcing end of power mode due to timeout")
             return
         
         # Update animation frame
@@ -198,7 +219,6 @@ class PowerManager:
                         # Set flags to complete animation
                         self.complete_animation_regardless = True
                         self.animation_locked = True
-                        print("Firing shot at kick animation frame 1")
             else:
                 # For other animations, cycle through frames normally
                 self.player.frame_index = (self.player.frame_index + 1) % len(self.player.current_animation)
@@ -217,7 +237,6 @@ class PowerManager:
                 self.player.current_animation = self.kick_frames
                 self.player.frame_index = 0
                 self.kick_animation_started = True
-                print("Starting kick animation")
                 play_sound('power_shot')
         
         # Falling down after shot
@@ -229,54 +248,108 @@ class PowerManager:
             if self.player.jump_height <= 0:
                 self._end_power_mode()  # End power mode once landed
     
-    def update_vine(self):
-        """Update vine animation"""
-        self.vine_animation_timer += 1
+    def update_vines(self):
+        """Update all vine animations"""
+        # Create a list to track which vine groups to remove
+        vines_to_remove = []
         
-        # First second - animate through frames
-        if self.vine_animation_timer < self.vine_animation_duration:
-            if self.vine_animation_timer % 12 == 0:
-                self.vine_frame_index = min(self.vine_frame_index + 1, len(self.vine_frames) - 1)
+        # Update each vine group
+        for i, vine_group in enumerate(self.vines):
+            # Update main vine
+            vine_group['main']['animation_timer'] += 1
+            
+            # First second - animate through frames
+            if vine_group['main']['animation_timer'] < vine_group['main']['animation_duration']:
+                if vine_group['main']['animation_timer'] % 12 == 0:
+                    vine_group['main']['frame_index'] = min(
+                        vine_group['main']['frame_index'] + 1, 
+                        len(self.vine_frames) - 1
+                    )
+            
+            # After animation + hold time, deactivate
+            elif vine_group['main']['animation_timer'] >= (
+                    vine_group['main']['animation_duration'] + 
+                    vine_group['main']['hold_duration']
+                ):
+                vines_to_remove.append(i)
+                continue
+            
+            # Update side vines
+            for side_vine in vine_group['sides']:
+                side_vine['animation_timer'] += 1
+                
+                # First second - animate through frames
+                if side_vine['animation_timer'] < side_vine['animation_duration']:
+                    if side_vine['animation_timer'] % 14 == 0:  # Slightly slower than main vine
+                        side_vine['frame_index'] = min(
+                            side_vine['frame_index'] + 1, 
+                            len(self.vine_frames) - 1
+                        )
         
-        # After animation + hold time, deactivate
-        elif self.vine_animation_timer >= self.vine_animation_duration + self.vine_hold_duration:
-            self.is_vine_active = False
-            self.vine_animation_timer = 0
-            self.vine_frame_index = 0
-            self.vine_rect = None
+        # Remove completed vine groups (in reverse order to avoid index issues)
+        for i in sorted(vines_to_remove, reverse=True):
+            del self.vines[i]
+        
+        # Update is_vine_active flag based on if any vines exist
+        self.is_vine_active = len(self.vines) > 0
     
     def draw_power_effects(self, surface):
         """Draw power effects"""
-        # Draw vine animation if active
-        if self.is_vine_active and self.vine_frames and self.vine_frame_index < len(self.vine_frames):
-            vine_frame = self.vine_frames[self.vine_frame_index]
-            
-            # Calculate growth factor
-            if self.vine_animation_timer < self.vine_animation_duration:
-                growth_factor = self.vine_animation_timer / self.vine_animation_duration
-            else:
-                growth_factor = 1.0
-            
-            # Scale and draw vine
-            original_height = vine_frame.get_height()
-            new_height = int(original_height * growth_factor)
-            
-            if new_height > 0:
-                scaled_vine = pygame.transform.scale(vine_frame, (vine_frame.get_width(), new_height))
-                vine_draw_pos = [
-                    self.vine_position[0] - scaled_vine.get_width()//2,
-                    self.vine_position[1] - new_height
-                ]
-                surface.blit(scaled_vine, vine_draw_pos)
+        # Draw all vine animations if active
+        if self.vine_frames:
+            for vine_group in self.vines:
+                # Draw main vine
+                main_vine = vine_group['main']
+                if main_vine['active'] and main_vine['frame_index'] < len(self.vine_frames):
+                    self._draw_single_vine(surface, main_vine, 1.0)  # Full size
                 
-                # Update collision rect
-                if self.vine_rect:
-                    self.vine_rect.height = new_height
-                    self.vine_rect.y = self.vine_position[1] - new_height
+                # Draw side vines
+                for side_vine in vine_group['sides']:
+                    if side_vine['active'] and side_vine['frame_index'] < len(self.vine_frames):
+                        self._draw_single_vine(surface, side_vine, side_vine.get('scale', 0.75))  # Smaller scale
+    
+    def _draw_single_vine(self, surface, vine_data, scale=1.0):
+        """Helper method to draw a single vine with given parameters"""
+        vine_frame = self.vine_frames[vine_data['frame_index']]
+        
+        # Calculate growth factor
+        if vine_data['animation_timer'] < vine_data['animation_duration']:
+            growth_factor = vine_data['animation_timer'] / vine_data['animation_duration']
+        else:
+            growth_factor = 1.0
+        
+        # MODIFIED: Scale width more to make vines appear denser
+        original_width = vine_frame.get_width() * scale * 1.4  # 40% wider
+        original_height = vine_frame.get_height() * scale
+        new_height = int(original_height * growth_factor)
+        
+        if new_height > 0:
+            scaled_vine = pygame.transform.scale(vine_frame, (int(original_width), new_height))
+            vine_draw_pos = [
+                vine_data['position'][0] - scaled_vine.get_width()//2,
+                vine_data['position'][1] - new_height
+            ]
+            surface.blit(scaled_vine, vine_draw_pos)
+            
+            # Update collision rect
+            if 'rect' in vine_data:
+                vine_data['rect'].height = new_height
+                vine_data['rect'].y = vine_data['position'][1] - new_height
     
     def get_vine_rect(self):
-        """Return vine collision rect"""
-        return self.vine_rect if self.is_vine_active else None
+        """Return all vine collision rects as a list"""
+        vine_rects = []
+        for vine_group in self.vines:
+            # Add main vine rect
+            if vine_group['main']['rect']:
+                vine_rects.append(vine_group['main']['rect'])
+            
+            # Add side vine rects
+            for side_vine in vine_group['sides']:
+                if side_vine['rect']:
+                    vine_rects.append(side_vine['rect'])
+            
+        return vine_rects if vine_rects else None
     
     def _update_carried_ball_position(self):
         """Update ball position when character is carrying it during power jump"""
@@ -298,8 +371,6 @@ class PowerManager:
     def _fire_power_shot(self):
         """Fire the power shot from the character's position"""
         if self.power_ball and hasattr(self.power_ball, 'pos'):
-            print("Firing power shot at height:", self.player.jump_height)
-            
             # Force character to face right
             self.player.is_flipped = False
             
@@ -370,9 +441,6 @@ class PowerManager:
             # Now properly resume the bot
             self.bot.resume()
             self.arena.resume_timer()
-        
-        print("Power mode ended, returning to idle")
-
     
     def reset(self):
         """Safely reset character state"""
@@ -384,11 +452,9 @@ class PowerManager:
         self.is_in_animation_sequence = False
         self.complete_animation_regardless = False
         
-        # Reset vine
+        # Reset all vines
         self.is_vine_active = False
-        self.vine_animation_timer = 0
-        self.vine_frame_index = 0
-        self.vine_rect = None
+        self.vines = []  # Clear all vine groups
         
         # Always make sure bot is unpaused after any reset
         if self.bot.is_paused:
