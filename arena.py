@@ -14,19 +14,18 @@ class Arena:
             self.background_img_raw = pygame.image.load("images/background/fire_animatiaon.gif")
             self.football_net_img = pygame.image.load("images/goal/lava_goal.png")
             self.football_net_img = pygame.transform.scale(self.football_net_img, (90, 200))
-            
-            
+            self.left_net_rect = pygame.Rect(0, 350, 100, 250)     # Left side
+            self.right_net_rect = pygame.Rect(720, 350, 100, 250)  # Right side
         else:
             self.background_img_raw = pygame.image.load("images/background/throne room.png")
-            self.football_net_img = pygame.image.load("images/goal/soccer-goal.png")
-            self.football_net_img = pygame.transform.scale(self.football_net_img, (100, 200))
+            self.football_net_img = pygame.image.load("images/goal/throne_goal.png")
+            self.football_net_img = pygame.transform.scale(self.football_net_img, (110, 240))
+            self.left_net_rect = pygame.Rect(0, 320, 100, 250)     # Left side
+            self.right_net_rect = pygame.Rect(700, 320, 100, 250)  # Right side
             
         
         self.background_img = pygame.transform.scale(self.background_img_raw, (800, 600))
-        
-        # Load Goal
-        self.left_net_rect = pygame.Rect(0, 350, 100, 250)     # Left side
-        self.right_net_rect = pygame.Rect(720, 350, 100, 250)  # Right side
+
         self.left_net_rect_goal_area = pygame.Rect(30, 395, 50, 150)
         self.right_net_rect_goal_area = pygame.Rect(720, 395, 50, 150)
         self.left_net_rect_top_bar = pygame.Rect(30, 380, 50, 15)
@@ -213,10 +212,10 @@ class Arena:
         self.player_power_bar.update()
         self.enemy_power_bar.update()
             
-        if (self.enemy_power_bar.is_full and not self.celebrating and bot.current_action == "kick" and random.random() < 0.5):  # 2% chance per frame
+        if (self.enemy_power_bar.is_full and not self.celebrating and bot.current_action == "kick" and random.random() < 0.2):  # 2% chance per frame
             self.enemy_power_bar.use_power()
             
-            if random.random() < 0.5:
+            if random.random() < 0:
                 bot.start_power_kick()
                 print("Enemy used special power: Power Kick!")
             else:
@@ -255,15 +254,15 @@ class Arena:
         # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect, 2)
         # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect, 2)
         
-        # # Draw first rectangle (e.g., red, filled)
-        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_top_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_side_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
+        # Draw first rectangle (e.g., red, filled)
+        pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_top_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_side_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
+        pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
 
-        # # # Draw second rectangle (e.g., green, outlined)
-        # pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
-        # pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
+        # # Draw second rectangle (e.g., green, outlined)
+        pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
+        pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
     
         self.draw_timer(screen)
         

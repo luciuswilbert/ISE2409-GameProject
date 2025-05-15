@@ -17,7 +17,7 @@ class BotLevel1:
                     img = pygame.transform.scale(img, resize)
                     loaded_images.append(img)
                 except pygame.error:
-                    print(f"❌ Error: Could not load image {frame}")
+                    print(f"Error: Could not load image {frame}")
             return loaded_images
 
         idle_frames = [f'images/bot_level_1/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]

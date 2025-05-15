@@ -1,6 +1,7 @@
 import pygame
 import sys
 import pygame.mixer
+from story import *
 
 from config import *
 from gameLevel1 import GameLevel1
@@ -107,8 +108,12 @@ class MainGame:
             # If retry button clicked, restart the game
             if not self.menu.running:
                 self.current_state = "PLAYING"
-                self.current_level = 1
+                # self.current_level = 1
         else:
+            # Show win screen (you could create a similar method in Menu class)
+            # self.show_win_screen()
+            # Story outro
+            throne_room_dialogue_after(self.screen)
             # Show win screen (you could create a similar method in Menu class)
             self.show_win_screen()
     
@@ -134,11 +139,11 @@ class MainGame:
                         stop_sound('menu_sound')  # Stop sound when ESC is pressed
                         self.running = False
                         waiting = False
-                    elif event.key == pygame.K_r:
-                        stop_sound('menu_sound')  # Stop sound when R is pressed
-                        self.current_state = "PLAYING"
-                        self.current_level = 1
-                        waiting = False
+                    # elif event.key == pygame.K_r:
+                    #     stop_sound('menu_sound')  # Stop sound when R is pressed
+                    #     self.current_state = "PLAYING"
+                    #     self.current_level = 1
+                    #     waiting = False
                     elif event.key == pygame.K_m:
                         stop_sound('menu_sound')  # Stop sound when M is pressed
                         self.current_state = "MENU"
@@ -153,9 +158,9 @@ class MainGame:
             self.screen.blit(text, text_rect)
             
             # Options
-            retry_text = small_font.render("Press R to Retry", True, (255, 255, 255))
-            retry_rect = retry_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-            self.screen.blit(retry_text, retry_rect)
+            # retry_text = small_font.render("Press R to Retry", True, (255, 255, 255))
+            # retry_rect = retry_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            # self.screen.blit(retry_text, retry_rect)
             
             menu_text = small_font.render("Press M for Main Menu", True, (255, 255, 255))
             menu_rect = menu_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
@@ -176,9 +181,11 @@ class MainGame:
                 result = GameLevel1(self.screen)
             elif self.current_level == 2:
                 result = GameLevel2(self.screen)
+                result = False
+                # pass
             else:
                 break  # No more levels
-                
+                1
             last_result = result  # Store result for game over screen
             
             if result:  # If player won the level
@@ -187,6 +194,7 @@ class MainGame:
                     self.show_level_complete(self.current_level)
                     # Move to next level
                     self.current_level += 1
+                    self.current_state = "LEVEL_2_TRANSITION"  # Transition to level 2
                 else:
                     # Player beat the final level
                     break
@@ -203,6 +211,14 @@ class MainGame:
         while self.running:
             if self.current_state == "MENU":
                 self.show_main_menu()
+                # Start menu and story intro
+                play_first_video(self.screen)
+                play_intro_scene(self.screen)
+                self.screen.fill((0, 0, 0))
+                pygame.display.flip()
+                pygame.time.delay(200)
+            elif self.current_state == "LEVEL_2_TRANSITION":
+                self.level_2_transition()
             elif self.current_state == "PLAYING":
                 self.play_level()
             elif self.current_state == "GAME_OVER":
@@ -211,6 +227,30 @@ class MainGame:
         
         pygame.quit()
         sys.exit()
+        
+    def level_2_transition(self):
+        """Transition to level 2"""
+        # Load the transition background
+        transition_bg = pygame.image.load("images/background/fire_animatiaon.gif")
+        transition_bg = pygame.transform.scale(transition_bg, (WIDTH, HEIGHT))
+        # play the shake
+        screen_shake_effect(self.screen, transition_bg)
+        pygame.mixer.init()
+        pygame.mixer.music.load("TransitionLv1Lv2/goingToCastle.mp3")  # replace with your path
+        pygame.mixer.music.play()
+
+        castle_zoom_out(self.screen, "TransitionLv1Lv2/CastleScene.png", duration_ms=12000)
+        fade_to_black(self.screen, duration=1000)
+        pygame.mixer.music.stop()
+
+        gate_entry_scene(self.screen, "TransitionLv1Lv2/castle.png")
+
+        throne_room_scene(self.screen)
+
+        throne_room_dialogue(self.screen)
+        
+        self.current_state = "PLAYING"
+        
 
 # Main entry point
 if __name__ == "__main__":

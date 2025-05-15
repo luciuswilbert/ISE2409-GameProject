@@ -1,9 +1,10 @@
+import time
 import pygame
+from botLevel1 import BotLevel1
 from config import *
 from ball import Ball
 from character import CharacterAnimation
 from arena import Arena
-from bot import Bot
 from power_manager import PowerManager
 import sys
 import time
@@ -16,7 +17,7 @@ def GameLevel2(screen):
     clock = pygame.time.Clock()
     ball = Ball()
     arena = Arena(level=2)  # IMPORTANT: Set level=2 here!
-    bot = Bot()
+    bot = BotLevel1()
     player = CharacterAnimation()
     
     # Debug: Verify level is set correctly
@@ -69,17 +70,17 @@ def GameLevel2(screen):
                         player.current_action = "jump"
                     elif event.key in CONTROL_KEYS.values():
                         player.current_action = "run"
-                    player.set_animation()
+                    player.set_animation(bot)
 
             elif event.type == pygame.KEYUP and not arena.celebrating:
                 keys_pressed.discard(event.key)
                 # Only change to idle if not in power mode and no keys pressed
                 if not keys_pressed and not power_manager.is_power_active:
                     player.current_action = "idle"
-                    player.set_animation()
+                    player.set_animation(bot)
 
         # Update arena (handles its own celebrations and power bars)
-        arena.update()
+        arena.update(bot)
         
         # Handle celebration and reset timing
         if arena.celebrating:
@@ -115,6 +116,8 @@ def GameLevel2(screen):
                 
                 # Resume timer and clear cooldown
                 arena.resume_timer()
+                arena.player_power_bar.resume()
+                arena.enemy_power_bar.resume()
                 goal_cooldown = False
                 reset_timer = 0
                 
@@ -126,10 +129,10 @@ def GameLevel2(screen):
             
             # Update game state for player (normal physics only if not in power mode)
             if not power_manager.is_power_active:
-                player.update(keys_pressed)
+                player.update(keys_pressed, bot)
             
             # Update game state for bot
-            bot.auto_chase(ball, player)
+            bot.auto_chase(ball, arena.enemy_power_bar)
             bot.update()
             
             # Check vine collision before updating ball
@@ -193,6 +196,8 @@ def GameLevel2(screen):
                     # Pause timer for celebrations only
                     if arena.celebrating:
                         arena.pause_timer()
+                        arena.player_power_bar.pause()
+                        arena.enemy_power_bar.pause()
                     else:
                         # For own goals, skip celebration and go straight to reset
                         print("Own goal detected, preparing immediate reset")
@@ -220,6 +225,16 @@ def GameLevel2(screen):
 
         # Draw game elements
         arena.draw(screen, ball, player, bot)
+        
+        # REMOVE WHEN LEVEL 1 BOT IS CHANGED TO LEVEL 2 BOT
+        if bot.start_fire:
+            arena.apply_blur_effect_with_dark_top(screen)
+            
+        if player.power_kick_hit:
+            if player.current_action != "hurt":
+                player.current_action = "hurt"
+                player.set_animation(bot)                    
+            player.update(keys_pressed, bot)
         
         # Draw power effects
         power_manager.draw_power_effects(screen)

@@ -12,7 +12,7 @@ class CharacterAnimation:
                     img = pygame.transform.scale(img, resize)
                     loaded_images.append(img)
                 except pygame.error:
-                    print(f"❌ Error: Could not load image {frame}")
+                    print(f" Error: Could not load image {frame}")
             return loaded_images
 
         idle_frames = [f'images/player/Idle A-{str(i).zfill(2)}.png' for i in range(1, 7)]
@@ -55,11 +55,11 @@ class CharacterAnimation:
         self.power_kick_hit = False
         self.pending_death = False
         
-    def update(self, keys_pressed):
-        # Update animation frame
-            self.position_x + 50,              # offset_x
-            self.position_y - self.jump_height + 50,  # offset_y
-            65, 100                            # width, height
+    # def update(self, keys_pressed):
+    #     # Update animation frame
+    #         self.position_x + 50,              # offset_x
+    #         self.position_y - self.jump_height + 50,  # offset_y
+    #         65, 100                            # width, height
 
 
     def draw_score(self):
@@ -69,7 +69,7 @@ class CharacterAnimation:
         pygame.draw.rect(self.screen, (255, 255, 255), bg_rect)
         self.screen.blit(score_surface, score_rect)
 
-    def update(self,keys_pressed,bot):
+    def update(self,keys_pressed,bot=None):
         # Stop all movement & physics if dead, but allow animation to progress
         if self.is_dying:
             if not self.is_grounded:
@@ -155,7 +155,7 @@ class CharacterAnimation:
         # Draw the character image
         surface.blit(img, (draw_x, draw_y))
 
-    def set_animation(self, bot):
+    def set_animation(self, bot=None):
         if self.current_action == "dead" and not bot.start_fire:
             return
         

@@ -254,7 +254,7 @@ def GameLevel1(screen):
         # Check if game should end
         if arena.time_out:
             print("Level 1 Game Over!")
-            running = False
+            break
       
     # Check if player has won
     if arena.win is True:
