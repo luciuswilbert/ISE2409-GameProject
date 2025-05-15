@@ -5,10 +5,16 @@ import sys
 from config import GROUND_Y, TOTAL_TIME, WIDTH
 from power_bar import PowerBar
 from sound_manager import play_sound
+from explosion_effect import ExplosionEffect
 
 
 class Arena:
     def __init__(self, level=1):
+        self.explosion_effect = None
+        self.enemy_special_active = False
+        self.player_dead = False
+        self.player_dead_timer = 0
+
         self.level = level  # Set the level attribute
         # load Background
         if level == 1:
@@ -17,6 +23,13 @@ class Arena:
             self.background_img_raw = pygame.image.load("images/background/throne room.png")
         
         self.background_img = pygame.transform.scale(self.background_img_raw, (800, 600))
+
+        self.explosion_frames = []
+        for i in range(1, 11):  
+            img = pygame.image.load(f"images/effectLevel2/Explosion_{i}.png").convert_alpha()
+            self.explosion_frames.append(img)
+            print(f"Loaded {len(self.explosion_frames)} explosion frames.")
+
         
         # Load Goal
         self.football_net_img = pygame.image.load("images/goal/soccer-goal.png")
@@ -85,7 +98,7 @@ class Arena:
         screen.blit(timer_surface, timer_rect)
 
         if remaining <= 0 and not self.time_out:
-            print("⏰ Time's up!")
+            print(" Time's up!")
             pygame.time.wait(100)
             self.time_out = True
             if self.score > self.enemy_score:
@@ -132,7 +145,7 @@ class Arena:
             # Demon scores if they last touched it
             if not self.ball_last_kicked_by_character:
                 self.enemy_score += 1
-                print(f"DEMON GOAL! 👿 Last touched by demon. Score: Character {self.score}, Demon {self.enemy_score}")
+                print(f"DEMON GOAL!  Last touched by demon. Score: Character {self.score}, Demon {self.enemy_score}")
                 self.celebrating = True
                 self.celebration_message = "DEMON Goal"
                 self.celebration_start_time = time.time()
@@ -164,7 +177,7 @@ class Arena:
             # Character scores if they last touched it
             if self.ball_last_kicked_by_character:
                 self.score += 1
-                print(f"CHARACTER GOAL! 🎯 Last touched by character. Score: Character {self.score}, Demon {self.enemy_score}")
+                print(f"CHARACTER GOAL!  Last touched by character. Score: Character {self.score}, Demon {self.enemy_score}")
                 self.celebrating = True
                 self.celebration_message = "Goal!"
                 self.celebration_start_time = time.time()
@@ -192,7 +205,7 @@ class Arena:
                 
         return False
         
-    def update(self):
+    def update(self, character):
         """Update game state including celebrations and power bars"""
         if self.celebrating:
             current_time = time.time()
@@ -209,9 +222,34 @@ class Arena:
         # Enemy AI for using power
         if (self.enemy_power_bar.is_full and 
             not self.celebrating and 
-            random.random() < 0.02):  # 2% chance per frame
+            not self.enemy_special_active and  # Only trigger if not already active!
+            random.random() < 0.02):
             self.enemy_power_bar.use_power()
+            play_sound('bomb')  # <-- add this line!
             print("Enemy used special power!")
+            self.enemy_special_active = True
+
+            # Set effect to play on the character position
+            player_center = (
+                character.position_x + 75,
+                character.position_y - character.jump_height - 80
+            )
+            self.explosion_effect = ExplosionEffect(self.explosion_frames, player_center, duration=50)
+        
+        if self.enemy_special_active and self.explosion_effect:
+            self.explosion_effect.update()
+            if not self.explosion_effect.active and not self.player_dead:
+                self.player_dead = True
+                self.player_dead_timer = 360  # 2 seconds at 60 FPS
+                print("Player is dead!")
+
+        if self.player_dead:
+            self.player_dead_timer -= 1
+            if self.player_dead_timer <= 0:
+                character.reset()
+                self.player_dead = False
+                self.enemy_special_active = False
+                print("Player respawned!")
 
 
     def draw_hint(self, screen, hint_text):
@@ -241,8 +279,16 @@ class Arena:
         self.draw_timer(screen)
         
         ball.draw(screen)
-        character.draw(screen)
+        if not self.player_dead:
+            character.draw(screen)
+        else:
+            pass  # (optional: draw a faint marker or nothing)
         bot.draw(screen)
+
+        # Draw the effect on top of the player
+        if self.enemy_special_active and self.explosion_effect:
+            self.explosion_effect.draw(screen)
+
 
         # Draw celebration text
         if self.celebrating:

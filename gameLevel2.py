@@ -9,7 +9,6 @@ import sys
 import time
 from sound_manager import play_background_music, play_sound
 
-
 def GameLevel2(screen):
     # Game elements (create objects)
     play_background_music('background')
@@ -79,7 +78,9 @@ def GameLevel2(screen):
                     player.set_animation()
 
         # Update arena (handles its own celebrations and power bars)
-        arena.update()
+        arena.update(player)
+
+        
         
         # Handle celebration and reset timing
         if arena.celebrating:
@@ -125,8 +126,9 @@ def GameLevel2(screen):
             power_manager.update(keys_pressed)
             
             # Update game state for player (normal physics only if not in power mode)
-            if not power_manager.is_power_active:
+            if not power_manager.is_power_active and not arena.player_dead:
                 player.update(keys_pressed)
+
             
             # Update game state for bot
             bot.auto_chase(ball, player)
@@ -140,7 +142,11 @@ def GameLevel2(screen):
                 ball.check_vine_collision(vine_rects)
             
             # Update game state for ball
-            dead_ball = ball.update(goal_rects, character_rects, player, bot) 
+            if arena.player_dead:
+                dead_ball = ball.update(goal_rects, character_rects, bot, bot)  # Pass bot for both player and bot
+            else:
+                dead_ball = ball.update(goal_rects, character_rects, player, bot)
+
 
             # Update scoreboard
             ball_rect = ball.get_rect()
@@ -221,7 +227,10 @@ def GameLevel2(screen):
                 power_manager.reset()
 
         # Draw game elements
-        arena.draw(screen, ball, player, bot)
+        if not arena.player_dead:
+            arena.draw(screen, ball, player, bot)
+        else:
+            arena.draw(screen, ball, None, bot)
         
         # Draw power effects
         power_manager.draw_power_effects(screen)
