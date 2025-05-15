@@ -132,10 +132,12 @@ def GameLevel2(screen):
             bot.auto_chase(ball, player)
             bot.update()
             
-            # Check vine collision before updating ball
-            vine_rect = power_manager.get_vine_rect()
-            if vine_rect:
-                ball.check_vine_collision(vine_rect)
+            # UPDATED: Check vine collision before updating ball
+            # Now correctly handles a list of vine rectangles
+            vine_rects = power_manager.get_vine_rect()
+            if vine_rects:
+                # Debug: Print the vine rects before passing to ball
+                ball.check_vine_collision(vine_rects)
             
             # Update game state for ball
             dead_ball = ball.update(goal_rects, character_rects, player, bot) 
