@@ -252,45 +252,54 @@ class Ball:
         
         return collision_occurred
 
-    def check_vine_collision(self, vine_rect):
-        """Check collision with vine and handle rebound - always bounce to the right"""
-        if vine_rect and self.get_rect().colliderect(vine_rect):
-            print(f"Vine collision detected! Ball pos: {self.pos}, Vine rect: {vine_rect}")  # Debug print
+    # UPDATED: Now handles a list of vine rectangles instead of a single rectangle
+    def check_vine_collision(self, vine_rects):
+        """Check collision with vines and handle rebound - always bounce to the right"""
+        if not vine_rects:  # Handle None or empty list case
+            return False
             
-            # Play ball touch sound for vine collision
-            play_sound('ball_kick')
-            
-            # Always make the ball bounce to the right
-            self.vel[0] = abs(self.vel[0]) * 1.5  # Force positive X velocity (right direction)
-            if self.vel[0] < 5:  # Ensure minimum speed
-                self.vel[0] = 5
-            
-            # Position the ball to the right of the vine to prevent multiple collisions
-            self.pos[0] = vine_rect.right + self.radius + 5
-            
-            # Add upward bounce effect
-            if self.vel[1] > 0:  # Ball moving down
-                self.vel[1] = -abs(self.vel[1]) * 0.8
-            else:  # Ball moving up or stationary
-                self.vel[1] = -5  # Give it an upward bounce
-            
-            # Add some randomness to make it more realistic
-            self.vel[0] += random.uniform(0, 3)  # Only add positive randomness to keep it going right
-            self.vel[1] += random.uniform(-2, 2)
-            
-            # If special effect is active, maintain its properties
-            if self.special_effect_active:
-                # Keep the special effect but adjust direction
-                self.vel[0] = abs(self.vel[0]) * 1.2
-
-            self.set_last_touched(True)
-            
-            # Add collision flash for visualization in debug mode
-            if DEBUG_MODE:
-                self.collision_flash = 10
+        # Get the ball's collision rect
+        ball_rect = self.get_rect()
+        
+        # Check for collision with any vine rect in the list
+        for vine_rect in vine_rects:
+            if ball_rect.colliderect(vine_rect):
+                print(f"Vine collision detected! Ball pos: {self.pos}, Vine rect: {vine_rect}")  # Debug print
                 
-            print(f"Ball rebounded to the right! New velocity: {self.vel}")  # Debug print
-            return True
+                # Play ball touch sound for vine collision
+                play_sound('ball_kick')
+                
+                # Always make the ball bounce to the right
+                self.vel[0] = abs(self.vel[0]) * 1.5  # Force positive X velocity (right direction)
+                if self.vel[0] < 5:  # Ensure minimum speed
+                    self.vel[0] = 5
+                
+                # Position the ball to the right of the vine to prevent multiple collisions
+                self.pos[0] = vine_rect.right + self.radius + 5
+                
+                # Add upward bounce effect
+                if self.vel[1] > 0:  # Ball moving down
+                    self.vel[1] = -abs(self.vel[1]) * 0.8
+                else:  # Ball moving up or stationary
+                    self.vel[1] = -5  # Give it an upward bounce
+                
+                # Add some randomness to make it more realistic
+                self.vel[0] += random.uniform(0, 3)  # Only add positive randomness to keep it going right
+                self.vel[1] += random.uniform(-2, 2)
+                
+                # If special effect is active, maintain its properties
+                if self.special_effect_active:
+                    # Keep the special effect but adjust direction
+                    self.vel[0] = abs(self.vel[0]) * 1.2
+
+                self.set_last_touched(True)
+                
+                # Add collision flash for visualization in debug mode
+                if DEBUG_MODE:
+                    self.collision_flash = 10
+                    
+                print(f"Ball rebounded to the right! New velocity: {self.vel}")  # Debug print
+                return True
         return False
 
     def update(self, rects, player_objects, player, bot):
@@ -509,13 +518,12 @@ class Ball:
             self.particles = []  # Clear any existing particles
             self.pulse_timer = 0  # Reset pulse timer
             
-            
-            
             # Store the character reference if provided
+            # Check if it's a PowerManager reference or character reference
             if character_ref:
                 self.character_ref = character_ref
                 # IMPORTANT: When special effect is activated, mark that character touched it
-                self.set_last_touched(True)  # Changed to use set_last_touched
+                self.set_last_touched(True)
                 print("POWER SHOT: Ball kicked by CHARACTER")
             
             # Initial velocity vector modification for a low, direct shot
