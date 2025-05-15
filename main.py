@@ -2,6 +2,7 @@ import pygame
 import sys
 import random
 
+
 from config import *
 from gameLevel1 import GameLevel1
 from gameLevel2 import GameLevel2
@@ -652,47 +653,47 @@ def chaos_statue_scene(screen):
         clock.tick(60)
 
 
-# # Start menu and story intro
-# play_first_video(screen)
-# play_intro_scene(screen)
-# screen.fill((0, 0, 0))
-# pygame.display.flip()
-# pygame.time.delay(200)
+# Start menu and story intro
+play_first_video(screen)
+play_intro_scene(screen)
+screen.fill((0, 0, 0))
+pygame.display.flip()
+pygame.time.delay(200)
 
-# # Game level 1
-# while True:
-#     if GameLevel1(screen):       
-#         break # If player wins level 1, break the loop to transition to level 2
-#     else:
-#         # If player loses level 1, show restart menu
-#         # If player chooses NOT to restart level 1, quit the game
-#         pygame.quit()
-#         sys.exit()
+# Game level 1
+while True:
+    if GameLevel1(screen):       
+        break # If player wins level 1, break the loop to transition to level 2
+    else:
+        # If player loses level 1, show restart menu
+        # If player chooses NOT to restart level 1, quit the game
+        pygame.quit()
+        sys.exit()
 
-# # Transition to level 2
-# transition_bg = pygame.image.load("images/background/fire_animatiaon.gif")
-# transition_bg = pygame.transform.scale(transition_bg, (WIDTH, HEIGHT))
+# Transition to level 2
+transition_bg = pygame.image.load("images/background/fire_animatiaon.gif")
+transition_bg = pygame.transform.scale(transition_bg, (WIDTH, HEIGHT))
 
-# # play the shake
-# screen_shake_effect(screen, transition_bg)
+# play the shake
+screen_shake_effect(screen, transition_bg)
 
-# pygame.mixer.init()
-# pygame.mixer.music.load("TransitionLv1Lv2/goingToCastle.mp3")  # replace with your path
-# pygame.mixer.music.play()
+pygame.mixer.init()
+pygame.mixer.music.load("TransitionLv1Lv2/goingToCastle.mp3")  # replace with your path
+pygame.mixer.music.play()
 
-# castle_zoom_out(screen, "TransitionLv1Lv2/CastleScene.png", duration_ms=12000)
-# fade_to_black(screen, duration=1000)
-# pygame.mixer.music.stop()
+castle_zoom_out(screen, "TransitionLv1Lv2/CastleScene.png", duration_ms=12000)
+fade_to_black(screen, duration=1000)
+pygame.mixer.music.stop()
 
-# gate_entry_scene(screen, "TransitionLv1Lv2/castle.png")
+gate_entry_scene(screen, "TransitionLv1Lv2/castle.png")
 
-# throne_room_scene(screen)
+throne_room_scene(screen)
 
-# throne_room_dialogue(screen)
+throne_room_dialogue(screen)
 
 
-# # Game level 2
-# GameLevel2(screen)
+# Game level 2
+GameLevel2(screen)
 
 # Story outro
 throne_room_dialogue_after(screen)

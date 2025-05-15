@@ -158,7 +158,7 @@ def play_chaos_video(screen):
     cap.release()
 
 def play_first_video(screen):
-    cap = cv2.VideoCapture("storyscene/firstVideo.mp4")
+    cap = cv2.VideoCapture("storyscene/revisionFirstVid.mp4")
     if not cap.isOpened():
         print("❌ Could not open video.")
         return
