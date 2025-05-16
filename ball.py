@@ -5,6 +5,7 @@ from collision import resolve_ball_obj_collision, resolve_ball_player_collision,
 from character import CharacterAnimation
 import random
 from sound_manager import play_sound
+from botLevel1 import BotLevel1
 
 class Ball:
     def __init__(self):
@@ -478,17 +479,21 @@ class Ball:
         for player_object in player_objects:
             player_rect = player_object.rect  # Access the player's rectangle
             
-            if bot.power_kick and player_object != bot:
-                # resolve_power_kick_collision(self, self.vel, player_rect)
-                bot_power_kick_player_ball_collision(
-                    self.pos, self.vel, self.radius,
-                    player, bounce_factor=0.5,
-                    power_kick_strength=1,
-                    player_push_strength=100
-                )
-            # elif player:
-            #     # player_objects is a list of Player instances
-            #     resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.8, vertical_bounce_factor=0.8)
+            if isinstance(bot, BotLevel1):
+                if bot.power_kick and player_object != bot:
+                    # resolve_power_kick_collision(self, self.vel, player_rect)
+                    bot_power_kick_player_ball_collision(
+                        self.pos, self.vel, self.radius,
+                        player, bounce_factor=0.5,
+                        power_kick_strength=1,
+                        player_push_strength=100
+                    )
+                # elif player:
+                #     # player_objects is a list of Player instances
+                #     resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.8, vertical_bounce_factor=0.8)
+                else:
+                    # player_objects is a list of Player instances
+                    resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.5, vertical_bounce_factor=0.8)
             else:
                 # player_objects is a list of Player instances
                 resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.5, vertical_bounce_factor=0.8)

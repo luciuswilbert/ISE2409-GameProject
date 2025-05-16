@@ -1,6 +1,6 @@
 import time
 import pygame
-from botLevel1 import BotLevel1
+from botLevel2 import BotLevel2
 from config import *
 from ball import Ball
 from character import CharacterAnimation
@@ -17,7 +17,7 @@ def GameLevel2(screen):
     clock = pygame.time.Clock()
     ball = Ball()
     arena = Arena(level=2)  # IMPORTANT: Set level=2 here!
-    bot = BotLevel1()
+    bot = BotLevel2()
     player = CharacterAnimation()
     
     # Debug: Verify level is set correctly
@@ -132,7 +132,7 @@ def GameLevel2(screen):
                 player.update(keys_pressed, bot)
             
             # Update game state for bot
-            bot.auto_chase(ball, arena.enemy_power_bar)
+            bot.auto_chase(ball)
             bot.update()
             
             # Check vine collision before updating ball
@@ -226,15 +226,15 @@ def GameLevel2(screen):
         # Draw game elements
         arena.draw(screen, ball, player, bot)
         
-        # REMOVE WHEN LEVEL 1 BOT IS CHANGED TO LEVEL 2 BOT
-        if bot.start_fire:
-            arena.apply_blur_effect_with_dark_top(screen)
+        # # REMOVE WHEN LEVEL 1 BOT IS CHANGED TO LEVEL 2 BOT
+        # if bot.start_fire:
+        #     arena.apply_blur_effect_with_dark_top(screen)
             
-        if player.power_kick_hit:
-            if player.current_action != "hurt":
-                player.current_action = "hurt"
-                player.set_animation(bot)                    
-            player.update(keys_pressed, bot)
+        # if player.power_kick_hit:
+        #     if player.current_action != "hurt":
+        #         player.current_action = "hurt"
+        #         player.set_animation(bot)                    
+        #     player.update(keys_pressed, bot)
         
         # Draw power effects
         power_manager.draw_power_effects(screen)

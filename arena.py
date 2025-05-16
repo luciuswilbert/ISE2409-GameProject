@@ -215,12 +215,13 @@ class Arena:
         if (self.enemy_power_bar.is_full and not self.celebrating and bot.current_action == "kick" and random.random() < 0.2):  # 2% chance per frame
             self.enemy_power_bar.use_power()
             
-            if random.random() < 0:
-                bot.start_power_kick()
-                print("Enemy used special power: Power Kick!")
-            else:
-                bot.start_ground_fire()
-                print("Enemy used special power: Ground Fire!")
+            if self.level == 1:
+                if random.random() < 0:
+                    bot.start_power_kick()
+                    print("Enemy used special power: Power Kick!")
+                else:
+                    bot.start_ground_fire()
+                    print("Enemy used special power: Ground Fire!")
 
 
     def draw_hint(self, screen, hint_text):
@@ -244,8 +245,9 @@ class Arena:
 
         screen.blit(self.background_img, (0, 0))
         
-        bot.trigger_full_ground_fire(screen, character)
-        bot.trigger_power_kick(ball, screen)
+        if self.level == 1:
+            bot.trigger_full_ground_fire(screen, character)
+            bot.trigger_power_kick(ball, screen)
         
         screen.blit(flipped_right_net, self.right_net_rect.topleft)  # Left net
         screen.blit(self.football_net_img, self.left_net_rect.topleft)  # Right net

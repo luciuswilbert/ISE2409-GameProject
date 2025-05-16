@@ -3,7 +3,7 @@ from config import *
 
 class BotLevel2:
     def __init__(self):
-        def load_images(frame_list, resize=(150, 200)):
+        def load_images(frame_list, resize=(120, 135)):
             loaded_images = []
             for frame in frame_list:
                 try:
@@ -14,21 +14,15 @@ class BotLevel2:
                     print(f"Error: Could not load image {frame}")
             return loaded_images
 
-        idle_frames = [f'images/bot_level_2/Idle A-{str(i).zfill(2)}.png' for i in range(1, 8)]
-        run_frames = [f'images/bot_level_2/Run A-{str(i).zfill(2)}.png' for i in range(1, 9)]
-        kick_frames = [f'images/bot_level_2/Attack A-{str(i).zfill(2)}.png' for i in range(1, 5)]
-        jump_frames = [f'images/bot_level_2/Jump A-{str(i).zfill(2)}.png' for i in range(1, 8)]
-        dead_frames = [f'images/bot_level_2/Dead A-{str(i).zfill(2)}.png' for i in range(1, 9)]
-        fly_frames = [f'images/dragon/Fly A-{str(i).zfill(2)}.png' for i in range(1, 7)]
+        idle_frames = [f'images/bot_level_2/Idle-{str(i).zfill(2)}.png' for i in range(1, 9)]
+        run_frames = [f'images/bot_level_2/Run-{str(i).zfill(2)}.png' for i in range(1, 9)]
+        jump_frames = [f'images/bot_level_2/Jump-{str(i).zfill(2)}.png' for i in range(1, 9)]
 
         self.idle_animation = load_images(idle_frames)
         self.run_animation = load_images(run_frames)
-        self.kick_animation = load_images(kick_frames)
         self.jump_animation = load_images(jump_frames)
-        self.fly_animation = load_images(fly_frames, resize=(200, 200))
-        self.dead_animation = load_images(dead_frames, resize=(150, 200))
-
-        if not all([self.idle_animation, self.run_animation, self.kick_animation, self.jump_animation]):
+        
+        if not all([self.idle_animation, self.run_animation, self.jump_animation]):
             raise RuntimeError("One or more animations failed to load. Check file paths.")
         
         self.current_animation = self.idle_animation
@@ -43,12 +37,12 @@ class BotLevel2:
         self.fall_speed = 0
         self.is_flipped = True  # Track direction
         self.position_x = 570  # Initial x position
-        self.position_y = GROUND_Y  # initial vertical position
+        self.position_y = GROUND_Y # initial vertical position
         self.move_speed = 5  # Movement speed
         self.rect = pygame.Rect(
             self.position_x + 50,              # offset_x
-            self.position_y - self.jump_height + 0,  # offset_y
-            65, 100                            # width, height
+            self.position_y - self.jump_height,  # offset_y
+            85, 100                            # width, height
         )
         self.is_jumping_over_ball = False
 
@@ -95,22 +89,16 @@ class BotLevel2:
             self.current_animation = self.idle_animation
         elif self.current_action == "run":
             self.current_animation = self.run_animation
-        elif self.current_action == "kick":
-            self.current_animation = self.kick_animation
         elif self.current_action == "jump" and self.is_grounded:
             self.current_animation = self.jump_animation
             self.is_jumping = True
             self.is_grounded = False
-        elif self.current_action == "dead":
-            self.current_animation = self.dead_animation
-        elif self.current_action == "fly":
-            self.current_animation = self.fly_animation
         self.frame_index = 0
         
     def draw(self, surface):
         img = self.current_animation[self.frame_index]
         draw_x = self.position_x 
-        draw_y = self.position_y - self.jump_height - 50
+        draw_y = self.position_y - self.jump_height + 20
 
         if self.is_flipped:
             img = pygame.transform.flip(img, True, False)
@@ -119,7 +107,7 @@ class BotLevel2:
         surface.blit(img, (draw_x, draw_y))
 
         # Draw the bounding rectangle (use same width/height as image)
-        # pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
+        pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
         
     def reset(self):
         self.__init__()
@@ -140,8 +128,8 @@ class BotLevel2:
             self.position_x -= self.move_speed
             self.is_flipped = True
 
-            if self.current_action != "kick":
-                self.current_action = "kick"
+            if self.current_action != "run":
+                self.current_action = "run"
                 self.set_animation()
                 
         if ball_rect.left > bot_rect.right and self.is_grounded:
@@ -162,7 +150,7 @@ class BotLevel2:
                 self.set_animation()
     
         # Jump if the ball is above the bot and the bot is on the ground
-        if ball_rect.bottom - 10 < bot_rect.top and self.is_grounded and abs(ball_rect.centerx - bot_rect.centerx) < 50:
+        if ball_rect.bottom - 10 < bot_rect.top and self.is_grounded and abs(ball_rect.centerx - bot_rect.centerx) < 100:
             self.is_jumping = True
             if self.current_action != "jump":
                 self.current_action = "jump"

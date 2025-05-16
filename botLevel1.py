@@ -270,7 +270,7 @@ class BotLevel1:
         self.power_kick = False
  
  
-    def auto_chase(self, ball, bot_power_bar):
+    def auto_chase(self, ball):
         # Skip chase logic if paused
         if self.is_paused:
             return

@@ -137,7 +137,7 @@ def GameLevel1(screen):
                 player.update(keys_pressed, bot)
             
             # Update game state for bot
-            bot.auto_chase(ball, arena.enemy_power_bar)
+            bot.auto_chase(ball)
             bot.update()
             
             # Check vine collision before updating ball
