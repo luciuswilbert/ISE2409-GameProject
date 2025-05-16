@@ -153,7 +153,7 @@ class MainGame:
             self.screen.fill((0, 0, 0))
             
             # Result text
-            text = font.render("YOU WIN!", True, (255, 215, 0))
+            text = font.render("TO BE CONTINUED", True, (255, 215, 0))
             text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 3))
             self.screen.blit(text, text_rect)
             
@@ -181,8 +181,6 @@ class MainGame:
                 result = GameLevel1(self.screen)
             elif self.current_level == 2:
                 result = GameLevel2(self.screen)
-                result = False
-                # pass
             else:
                 break  # No more levels
                 1
