@@ -14,6 +14,7 @@ class Ball:
         self.bounciness = -0.7  # Fixed bounciness for testing
         self.prev_y = self.pos[1]
         self.ground_collision_threshold = 2.0
+        self.meteor_locked = False  # Add to track if the meteor is carrying the ball
         
         # Track who kicked the ball last
         self.last_kicked_by_player = True  # True for player/character, False for demon/bot
@@ -303,6 +304,16 @@ class Ball:
         return False
 
     def update(self, rects, player_objects, player, bot):
+        # ======= BEGIN: Meteor Carrying Ball Logic ========
+        if self.arena and getattr(self.arena, "meteor_ball_locked", False):
+            # Force the ball position to the meteor position
+            self.pos[0] = self.arena.meteor_ball_x
+            self.pos[1] = self.arena.meteor_ball_y
+            self.vel = [0, 0]  # Lock velocity as well
+            # (Skip ALL OTHER PHYSICS and COLLISION!)
+            return False  # Do not update ball, do not allow goal until meteor lands
+        # ======= END: Meteor Carrying Ball Logic ========
+
         # Handle collision flash countdown
         if hasattr(self, 'collision_flash') and self.collision_flash > 0:
             self.collision_flash -= 1

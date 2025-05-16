@@ -30,7 +30,8 @@ def initialize_sounds():
         'whistle': 'sounds/whistle.mp3',
         'win': 'sounds/level_win.mp3',
         'retry': 'sounds/retry_page.wav',
-        'bomb': 'sounds/bomb.mp3'
+        'bomb': 'sounds/bomb.mp3',
+        'meteor': 'sounds/nuke.mp3'
     }
     
     # Load each sound into the dictionary

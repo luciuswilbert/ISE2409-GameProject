@@ -6,6 +6,9 @@ from config import GROUND_Y, TOTAL_TIME, WIDTH
 from power_bar import PowerBar
 from sound_manager import play_sound
 from explosion_effect import ExplosionEffect
+from meteor_effect import MeteorEffect
+from sound_manager import stop_sound
+
 
 
 class Arena:
@@ -14,6 +17,13 @@ class Arena:
         self.enemy_special_active = False
         self.player_dead = False
         self.player_dead_timer = 0
+        self.meteor_effect = None
+        self.meteor_triggered = False
+        self.lucifer_skill_toggle = 0  # 0 for explosion, 1 for meteor
+        self.meteor_carrying_ball = False  # Tracks if ball is being carried by meteor
+        self.meteor_ball_x = 0
+        self.meteor_ball_y = 0
+        self.meteor_ball_locked = False
 
         self.level = level  # Set the level attribute
         # load Background
@@ -205,7 +215,7 @@ class Arena:
                 
         return False
         
-    def update(self, character):
+    def update(self, character, ball):
         """Update game state including celebrations and power bars"""
         if self.celebrating:
             current_time = time.time()
@@ -222,25 +232,43 @@ class Arena:
         # Enemy AI for using power
         if (self.enemy_power_bar.is_full and 
             not self.celebrating and 
-            not self.enemy_special_active and  # Only trigger if not already active!
+            not self.enemy_special_active and  
             random.random() < 0.02):
-            self.enemy_power_bar.use_power()
-            play_sound('bomb')  # <-- add this line!
-            print("Enemy used special power!")
-            self.enemy_special_active = True
 
-            # Set effect to play on the character position
-            player_center = (
-                character.position_x + 75,
-                character.position_y - character.jump_height - 80
-            )
-            self.explosion_effect = ExplosionEffect(self.explosion_frames, player_center, duration=50)
+            self.enemy_power_bar.use_power()
+            print("Enemy used special power!")
+
+            if self.lucifer_skill_toggle == 0:
+                # --- Explosion Skill ---
+                play_sound('bomb')
+                self.enemy_special_active = True
+
+                player_center = (
+                    character.position_x + 75,
+                    character.position_y - character.jump_height - 80
+                )
+                self.explosion_effect = ExplosionEffect(self.explosion_frames, player_center, duration=50)
+                self.lucifer_skill_toggle = 1  # Next skill will be meteor
+
+            else:
+                # --- Meteor Skill ---
+                play_sound('meteor')
+                if not self.meteor_triggered:
+                    start_pos = (750, 0)
+                    end_pos = (50, 500)  # almost bottom center of the goal net
+                    self.meteor_effect = MeteorEffect(start_pos, end_pos, duration=50)
+                    self.meteor_triggered = True
+                    self.meteor_carrying_ball = True  # <--- ADD THIS
+                self.lucifer_skill_toggle = 0  # Next skill will be explosion
+
+
         
         if self.enemy_special_active and self.explosion_effect:
             self.explosion_effect.update()
             if not self.explosion_effect.active and not self.player_dead:
+                stop_sound('bomb')
                 self.player_dead = True
-                self.player_dead_timer = 360  # 2 seconds at 60 FPS
+                self.player_dead_timer = 120  # 2 seconds at 60 FPS
                 print("Player is dead!")
 
         if self.player_dead:
@@ -250,6 +278,34 @@ class Arena:
                 self.player_dead = False
                 self.enemy_special_active = False
                 print("Player respawned!")
+        # Update meteor effect
+        if self.meteor_effect:
+            self.meteor_effect.update()
+                # === NEW: Make the ball follow the meteor while it's flying ===
+            if self.meteor_carrying_ball:
+                t = min(1, self.meteor_effect.counter / self.meteor_effect.duration)
+                x = (1 - t) * self.meteor_effect.start_pos[0] + t * self.meteor_effect.end_pos[0]
+                y = (1 - t) * self.meteor_effect.start_pos[1] + t * self.meteor_effect.end_pos[1]
+                self.meteor_ball_x = int(x)
+                self.meteor_ball_y = int(y)
+                self.meteor_ball_locked = True
+
+            if not self.meteor_effect.active:
+                stop_sound('meteor')
+                self.meteor_effect = None
+                self.meteor_triggered = False
+                if self.meteor_carrying_ball:
+                    # Place the ball at meteor's landing spot
+                    ball.pos[0] = self.meteor_ball_x
+                    ball.pos[1] = self.meteor_ball_y
+                    self.meteor_carrying_ball = False
+                    self.meteor_ball_locked = False
+
+
+        
+
+
+
 
 
     def draw_hint(self, screen, hint_text):
@@ -278,7 +334,13 @@ class Arena:
         self.draw_score(screen)
         self.draw_timer(screen)
         
-        ball.draw(screen)
+        # Only draw the ball if the meteor is NOT active
+        if not self.meteor_effect:
+            ball.draw(screen)
+        # (draw meteor effect below as usual)
+        if self.meteor_effect:
+            self.meteor_effect.draw(screen)
+        
         if not self.player_dead:
             character.draw(screen)
         else:
@@ -319,5 +381,9 @@ class Arena:
         
         # Note: Bottom screen hint has been removed
         # Hints are now only shown when the power bar is full
+
+        if self.meteor_effect:
+            self.meteor_effect.draw(screen)
+
         
         return self.win

@@ -78,7 +78,7 @@ def GameLevel2(screen):
                     player.set_animation()
 
         # Update arena (handles its own celebrations and power bars)
-        arena.update(player)
+        arena.update(player, ball)
 
         
         
