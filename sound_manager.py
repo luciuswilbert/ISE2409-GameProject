@@ -29,7 +29,9 @@ def initialize_sounds():
         'menu_sound': 'sounds/game_background.mp3',
         'whistle': 'sounds/whistle.mp3',
         'win': 'sounds/level_win.mp3',
-        'retry': 'sounds/retry_page.wav'
+        'retry': 'sounds/retry_page.wav',
+        'bomb': 'sounds/bomb.mp3',
+        'meteor': 'sounds/nuke.mp3'
     }
     
     # Load each sound into the dictionary
