@@ -47,13 +47,98 @@ class MainGame:
         # so we don't need to stop it here again
         if not self.menu.running:
             self.current_state = "PLAYING"
-            self.current_level = 2  # Always start at level 1
+            self.current_level = 1  # Always start at level 1
+            
+    def show_ready_start_transition(self):
+        """Show 'Ready?' and 'Start!' captions before starting gameplay"""
+        clock = pygame.time.Clock()
+        font = pygame.font.SysFont(None, 120)  # Large font for visibility
+        
+        # Create a black background instead of capturing the current screen
+        background = pygame.Surface((WIDTH, HEIGHT))
+        background.fill((0, 0, 0))  # Fill with black
+        
+        # First show "Ready?" caption
+        ready_text = font.render("Ready?", True, (255, 255, 255))
+        ready_rect = ready_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        
+        # Fade in "Ready?" text
+        for alpha in range(0, 255, 5):
+            # Use black background
+            self.screen.blit(background, (0, 0))
+            
+            # Create a transparent surface for the text
+            text_surface = pygame.Surface((ready_rect.width, ready_rect.height), pygame.SRCALPHA)
+            ready_text_copy = ready_text.copy()
+            ready_text_copy.set_alpha(alpha)
+            text_surface.blit(ready_text_copy, (0, 0))
+            
+            # Overlay the text
+            self.screen.blit(text_surface, ready_rect)
+            pygame.display.flip()
+            clock.tick(60)
+        
+        # Display "Ready?" for 1.5 seconds
+        pygame.time.delay(1500)
+        
+        # Fade out "Ready?" text
+        for alpha in range(255, 0, -5):
+            # Use black background
+            self.screen.blit(background, (0, 0))
+            
+            # Create a transparent surface for the text
+            text_surface = pygame.Surface((ready_rect.width, ready_rect.height), pygame.SRCALPHA)
+            ready_text_copy = ready_text.copy()
+            ready_text_copy.set_alpha(alpha)
+            text_surface.blit(ready_text_copy, (0, 0))
+            
+            # Overlay the text
+            self.screen.blit(text_surface, ready_rect)
+            pygame.display.flip()
+            clock.tick(60)
+        
+        # Short pause
+        pygame.time.delay(500)
+        
+        # Now show "Start!" caption
+        start_text = font.render("Start!", True, (255, 255, 0))  # Yellow color for emphasis
+        start_rect = start_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        
+        # Fade in "Start!" text with a slight zoom effect
+        for i in range(60):
+            # Use black background
+            self.screen.blit(background, (0, 0))
+            
+            scale = 0.5 + (i / 60) * 0.5  # Scale from 0.5 to 1.0
+            scaled_text = pygame.transform.scale(
+                start_text, 
+                (int(start_rect.width * scale), int(start_rect.height * scale))
+            )
+            scaled_rect = scaled_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            
+            # Overlay the scaled text
+            self.screen.blit(scaled_text, scaled_rect)
+            pygame.display.flip()
+            clock.tick(60)
+        
     
     def show_level_complete(self, level_num):
         """Display a level complete screen before moving to next level"""
         clock = pygame.time.Clock()
         font = pygame.font.SysFont(None, 100)
         small_font = pygame.font.SysFont(None, 50)
+
+        try:
+            # Try loading the background image
+            complete_bg = pygame.image.load("images/background/complate_level_background.png").convert()
+            complete_bg = pygame.transform.scale(complete_bg, (WIDTH, HEIGHT))
+        except pygame.error as e:
+            print(f"Error loading background image: {e}")
+            complete_bg = None
+
+        complete_bg = pygame.image.load("images/background/complate_level_background.png")
+        complete_bg = pygame.transform.scale(complete_bg, (WIDTH, HEIGHT))
+
         
         # Play a victory sound
         play_sound('win')  # Use an existing sound for level complete
@@ -71,7 +156,10 @@ class MainGame:
                     waiting = False  # Any key press skips the screen
             
             # Draw level complete screen
-            self.screen.fill((0, 0, 0))
+            if complete_bg:
+                self.screen.blit(complete_bg, (0, 0))  # Draw background first
+            else:
+                self.screen.fill((0, 0, 0)) 
             
             # Level complete text
             text = font.render(f"Level {level_num} Complete!", True, (0, 255, 0))
@@ -150,7 +238,13 @@ class MainGame:
                         waiting = False
         
             # Draw win screen
-            self.screen.fill((0, 0, 0))
+            try:
+                win_bg = pygame.image.load("images/background/complate_level_background.png").convert()
+                win_bg = pygame.transform.scale(win_bg, (WIDTH, HEIGHT))
+                self.screen.blit(win_bg, (0, 0))
+            except pygame.error as e:
+                print(f"Error loading win background: {e}")
+                self.screen.fill((0, 0, 0))
             
             # Result text
             text = font.render("TO BE CONTINUED", True, (255, 215, 0))
@@ -209,12 +303,14 @@ class MainGame:
         while self.running:
             if self.current_state == "MENU":
                 self.show_main_menu()
-                # # Start menu and story intro
-                # play_first_video(self.screen)
-                # play_intro_scene(self.screen)
-                # self.screen.fill((0, 0, 0))
-                # pygame.display.flip()
-                # pygame.time.delay(200)
+                # Start menu and story intro
+                play_first_video(self.screen)
+                play_intro_scene(self.screen)
+                self.screen.fill((0, 0, 0))
+                pygame.display.flip()
+                pygame.time.delay(200)
+                self.show_ready_start_transition()
+
             elif self.current_state == "LEVEL_2_TRANSITION":
                 self.level_2_transition()
             elif self.current_state == "PLAYING":
