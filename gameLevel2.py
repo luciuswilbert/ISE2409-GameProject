@@ -10,7 +10,6 @@ import sys
 import time
 from sound_manager import play_background_music, play_sound
 
-
 def GameLevel2(screen):
     # Game elements (create objects)
     play_background_music('background')
@@ -80,7 +79,7 @@ def GameLevel2(screen):
                     player.set_animation(bot)
 
         # Update arena (handles its own celebrations and power bars)
-        arena.update(bot)
+        arena.update(bot, player, ball)
         
         # Handle celebration and reset timing
         if arena.celebrating:
@@ -135,13 +134,19 @@ def GameLevel2(screen):
             bot.auto_chase(ball)
             bot.update()
             
-            # Check vine collision before updating ball
-            vine_rect = power_manager.get_vine_rect()
-            if vine_rect:
-                ball.check_vine_collision(vine_rect)
+            # UPDATED: Check vine collision before updating ball
+            # Now correctly handles a list of vine rectangles
+            vine_rects = power_manager.get_vine_rect()
+            if vine_rects:
+                # Debug: Print the vine rects before passing to ball
+                ball.check_vine_collision(vine_rects)
             
             # Update game state for ball
-            dead_ball = ball.update(goal_rects, character_rects, player, bot) 
+            if arena.player_dead:
+                dead_ball = ball.update(goal_rects, character_rects, bot, bot)  # Pass bot for both player and bot
+            else:
+                dead_ball = ball.update(goal_rects, character_rects, player, bot)
+
 
             # Update scoreboard
             ball_rect = ball.get_rect()
@@ -224,17 +229,10 @@ def GameLevel2(screen):
                 power_manager.reset()
 
         # Draw game elements
-        arena.draw(screen, ball, player, bot)
-        
-        # # REMOVE WHEN LEVEL 1 BOT IS CHANGED TO LEVEL 2 BOT
-        # if bot.start_fire:
-        #     arena.apply_blur_effect_with_dark_top(screen)
-            
-        # if player.power_kick_hit:
-        #     if player.current_action != "hurt":
-        #         player.current_action = "hurt"
-        #         player.set_animation(bot)                    
-        #     player.update(keys_pressed, bot)
+        if not arena.player_dead:
+            arena.draw(screen, ball, player, bot)
+        else:
+            arena.draw(screen, ball, None, bot)
         
         # Draw power effects
         power_manager.draw_power_effects(screen)

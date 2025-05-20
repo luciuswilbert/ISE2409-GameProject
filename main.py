@@ -3,6 +3,7 @@ import sys
 import pygame.mixer
 from story import *
 
+import arena
 from config import *
 from gameLevel1 import GameLevel1
 from gameLevel2 import GameLevel2
@@ -26,7 +27,7 @@ class MainGame:
         # Game state
         self.running = True
         self.current_state = "MENU"  # MENU, PLAYING, GAME_OVER
-        self.current_level = 1
+        self.current_level = 2
         self.max_levels = 2  # Currently have 2 levels
         
         # Create menu instance

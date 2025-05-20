@@ -85,7 +85,7 @@ def GameLevel1(screen):
                     player.set_animation(bot)
 
         # Update arena (handles its own celebrations and power bars)
-        arena.update(bot)
+        arena.update(bot, player, ball)
         
         # Handle celebration and reset timing
         if arena.celebrating:
