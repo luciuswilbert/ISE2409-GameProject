@@ -17,10 +17,12 @@ class BotLevel2:
         idle_frames = [f'images/bot_level_2/Idle-{str(i).zfill(2)}.png' for i in range(1, 9)]
         run_frames = [f'images/bot_level_2/Run-{str(i).zfill(2)}.png' for i in range(1, 9)]
         jump_frames = [f'images/bot_level_2/Jump-{str(i).zfill(2)}.png' for i in range(1, 9)]
+        attack_frames = [f'images/bot_level_2/Attack-{str(i).zfill(2)}.png' for i in range(1, 3)]
 
         self.idle_animation = load_images(idle_frames)
         self.run_animation = load_images(run_frames)
         self.jump_animation = load_images(jump_frames)
+        self.attack_animation = load_images(attack_frames)
         
         if not all([self.idle_animation, self.run_animation, self.jump_animation]):
             raise RuntimeError("One or more animations failed to load. Check file paths.")
