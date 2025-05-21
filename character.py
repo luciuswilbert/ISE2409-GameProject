@@ -49,7 +49,7 @@ class CharacterAnimation:
         self.rect = pygame.Rect(
             self.position_x + 40,
             self.position_y - self.jump_height + 40,
-            50, 80
+            60, 100
         )
         self.is_dying = False
         self.power_kick_hit = False
@@ -162,21 +162,42 @@ class CharacterAnimation:
         if self.current_action == "idle":
             self.current_animation = self.idle_animation
             self.frame_delay = 5
+            self.rect = pygame.Rect(
+                self.position_x + 40,
+                self.position_y - self.jump_height + 40,
+                60, 100
+            )
         elif self.current_action == "run":
             self.current_animation = self.run_animation
             self.frame_delay = 5
+            self.rect = pygame.Rect(
+                self.position_x + 40,
+                self.position_y - self.jump_height + 40,
+                60, 100
+            )
         elif self.current_action == "kick":
             self.current_animation = self.kick_animation
             self.frame_delay = 5
+            self.rect = pygame.Rect(
+                self.position_x + 40,
+                self.position_y - self.jump_height + 40,
+                60, 100
+            )
         elif self.current_action == "jump" and self.is_grounded:
             self.current_animation = self.jump_animation
             self.is_jumping = True
             self.is_grounded = False
             self.frame_delay = 5
+            self.rect = pygame.Rect(
+                self.position_x + 40,
+                self.position_y - self.jump_height + 40,
+                60, 100
+            )
         elif self.current_action == "dead":
             self.current_animation = self.dead_animation
             self.is_dying = True
             self.frame_delay = 50
+            self.rect = pygame.Rect(0,0,0,0)
             
              # Simulate falling down during death
             if self.jump_height > 0:
@@ -191,6 +212,11 @@ class CharacterAnimation:
         elif self.current_action == "hurt":
             self.current_animation = self.hurt_animation
             self.frame_delay = 5
+            self.rect = pygame.Rect(
+                self.position_x + 40,
+                self.position_y - self.jump_height + 40,
+                60, 100
+            )
         self.frame_index = 0
         
     def draw(self, surface):
@@ -206,22 +232,6 @@ class CharacterAnimation:
 
         # Draw the bounding rectangle (use same width/height as image)
         # pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
-    
-    # def draw(self, surface):
-    #     img = self.current_animation[self.frame_index]
-
-    #     # Dead characters shouldn't float mid-air
-    #     if self.is_dying:
-    #         draw_x = self.position_x
-    #         draw_y = self.position_y  # Stay on ground
-    #     else:
-    #         draw_x = self.position_x
-    #         draw_y = self.position_y - self.jump_height
-
-    #     if self.is_flipped:
-    #         img = pygame.transform.flip(img, True, False)
-
-    #     surface.blit(img, (draw_x, draw_y))
 
         
     def reset(self):

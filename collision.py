@@ -28,8 +28,8 @@ def resolve_ball_obj_collision(circle_pos, circle_vel, radius, rect, bounce_fact
         # Ensure the ball's velocity is adjusted correctly along the collision normal
         # Project the velocity onto the normal direction (nx, ny)
         velocity_normal = circle_vel[0] * nx + circle_vel[1] * ny
-        circle_vel[0] -= 1 * velocity_normal * nx  # Reflect the velocity along the normal
-        circle_vel[1] -= 1 * velocity_normal * ny
+        circle_vel[0] -= 2 * velocity_normal * nx  # Reflect the velocity along the normal
+        circle_vel[1] -= 2 * velocity_normal * ny
 
         # Apply the bounce factor to adjust the velocity's magnitude
         circle_vel[0] *= bounce_factor
@@ -83,15 +83,6 @@ def resolve_ball_player_collision(circle_pos, circle_vel, radius, rect, horizont
     
     return False
 
-# def resolve_power_kick_collision(ball, ball_vel, player_rect, force=2):
-#     # Custom behavior: maybe launch player or apply stronger knockback
-#     ball_rect = ball.get_rect()
-#     # This is just an example
-#     if ball_rect.colliderect(player_rect):
-#         # Reflect velocity more forcefully
-#         ball_vel[0] *= -force
-#         ball_vel[1] *= -force
-#         # You could also add effects to the player here (e.g., stunned)
 
 def bot_power_kick_player_ball_collision(circle_pos, circle_vel, radius, player, bounce_factor, power_kick_strength, player_push_strength):
     rect = player.rect  # Access the player's collision rectangle
@@ -112,10 +103,8 @@ def bot_power_kick_player_ball_collision(circle_pos, circle_vel, radius, player,
         original_velocity_mag = math.hypot(circle_vel[0], circle_vel[1])
         if original_velocity_mag != 0:
             push_dir_x = circle_vel[0] / original_velocity_mag
-            push_dir_y = circle_vel[1] / original_velocity_mag
         else:
             push_dir_x = 0
-            push_dir_y = 0
 
         # Normalize the collision normal (direction)
         nx, ny = dx / distance, dy / distance
@@ -142,10 +131,8 @@ def bot_power_kick_player_ball_collision(circle_pos, circle_vel, radius, player,
 
         # Push the player using the *original* direction of the ball
         player.position_x += push_dir_x * player_push_strength
-        # player.position_y += push_dir_y * player_push_strength
         
         player.position_x = max(-50, min(WIDTH - 150, player.position_x))
-        # player.position_y = max(0, min(HEIGHT - 200, player.position_y))  # 200 is character height
         
         player.power_kick_hit = True
 

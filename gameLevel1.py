@@ -5,7 +5,6 @@ from character import CharacterAnimation
 from arena import Arena
 from botLevel1 import BotLevel1
 from power_manager import PowerManager
-from power_bar import PowerBar
 import sys
 import time
 from sound_manager import play_background_music, play_sound
@@ -13,9 +12,9 @@ from sound_manager import play_background_music, play_sound
 
 def GameLevel1(screen):
     # Game elements (create objects)
-    play_background_music('background')
+    play_background_music('level1_background')
     clock = pygame.time.Clock()
-    ball = Ball()
+    ball = Ball(1)
     arena = Arena(level=1)
     bot = BotLevel1()
     player = CharacterAnimation()
@@ -59,15 +58,8 @@ def GameLevel1(screen):
                         # Play power activation sound
                         continue
 
-                # Handle vine power - COMPLETELY DISABLED FOR LEVEL 1
-                # Handle vine power - PowerManager now handles level checks
-                if event.key == pygame.K_v and not power_manager.is_vine_active:
-                    # PowerManager will check if vine is available for current level
-                    power_manager.activate_vine()
-                    continue
-
                 # Only process normal animations if not in power mode
-                if not power_manager.is_power_active:
+                if not power_manager.is_power_active and not bot.start_fire:
                     if event.key == pygame.K_k:
                         player.current_action = "kick"
                         play_sound('ball_kick')
@@ -139,11 +131,6 @@ def GameLevel1(screen):
             # Update game state for bot
             bot.auto_chase(ball)
             bot.update()
-            
-            # Check vine collision before updating ball
-            vine_rect = power_manager.get_vine_rect()
-            if vine_rect:
-                ball.check_vine_collision(vine_rect)
             
             # Update game state for ball
             dead_ball = ball.update(goal_rects, character_rects, player, bot) 

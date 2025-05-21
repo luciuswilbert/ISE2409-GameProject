@@ -8,15 +8,18 @@ from sound_manager import play_sound
 from botLevel1 import BotLevel1
 
 class Ball:
-    def __init__(self):
+    def __init__(self, current_level=1):
         self.radius = 15
         self.pos = [WIDTH // 2, 100]
         self.vel = [0, 0] # x for horizontal, y for vertical speed
         self.angle = 0  # Rotation angle in degrees
-        self.bounciness = -0.9  # Fixed bounciness for testing
+        self.bounciness = -0.8  # Fixed bounciness for testing
         self.prev_y = self.pos[1]
         self.ground_collision_threshold = 2.0
-        self.HORIZONTAL_FORCE_SCALE = 0.6
+        if current_level == 1:
+            self.HORIZONTAL_FORCE_SCALE = 0.6
+        else:
+            self.HORIZONTAL_FORCE_SCALE = 0.7
         self.VERTICAL_FORCE_SCALE = 1
         self.meteor_locked = False  # Add to track if the meteor is carrying the ball
         
@@ -480,21 +483,29 @@ class Ball:
             # Add collision flash for visualization in debug mode
             if DEBUG_MODE:
                 self.collision_flash = 5
+                
+        if player.rect.colliderect(self.get_rect()):
+            if player.current_action == "kick":
+                if player.is_flipped:
+                    self.vel[0] = -10
+                    self.vel[1] = -5
+                else:
+                    self.vel[0] = 10
+                    self.vel[1] = -5
+                    
+        if bot.rect.colliderect(self.get_rect()):
+            if bot.current_action == "kick" or bot.current_action == "attack":
+                if bot.is_flipped:
+                    self.vel[0] = -10
+                    self.vel[1] = -5
+                else:
+                    self.vel[0] = 10
+                    self.vel[1] = -5
             
         for rect in rects:
-            collision_before = resolve_ball_obj_collision(self.pos, self.vel, self.radius, rect, bounce_factor=0.5)
+            collision_before = resolve_ball_obj_collision(self.pos, self.vel, self.radius, rect, bounce_factor=1)
             if collision_before and DEBUG_MODE:
                 self.collision_flash = 5
-            
-        # # Handle collisions with players
-        # if bot.power_kick:
-        #     for i, player in enumerate(player_objects):
-        #         if isinstance(player, CharacterAnimation):
-        #             player_rect = player.rect 
-        #             resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, bounce_factor=1)
-        #             del player_objects[i]
-        #             break  # Stop after removing the first one
-
         
         for player_object in player_objects:
             player_rect = player_object.rect  # Access the player's rectangle
@@ -505,17 +516,12 @@ class Ball:
                     bot_power_kick_player_ball_collision(
                         self.pos, self.vel, self.radius,
                         player, bounce_factor=0.5,
-                        power_kick_strength=1,
-                        player_push_strength=100
+                        power_kick_strength=2,
+                        player_push_strength=80
                     )
-                # elif player:
-                #     # player_objects is a list of Player instances
-                #     resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.8, vertical_bounce_factor=0.8)
                 else:
-                    # player_objects is a list of Player instances
                     resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.5, vertical_bounce_factor=0.8)
             else:
-                # player_objects is a list of Player instances
                 resolve_ball_player_collision(self.pos, self.vel, self.radius, player_rect, horizontal_bounce_factor=0.5, vertical_bounce_factor=0.8)
 
         

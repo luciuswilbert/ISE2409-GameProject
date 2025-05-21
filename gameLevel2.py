@@ -12,9 +12,9 @@ from sound_manager import play_background_music, play_sound
 
 def GameLevel2(screen):
     # Game elements (create objects)
-    play_background_music('background')
+    play_background_music('level2_background')
     clock = pygame.time.Clock()
-    ball = Ball()
+    ball = Ball(2)
     arena = Arena(level=2)  # IMPORTANT: Set level=2 here!
     bot = BotLevel2()
     player = CharacterAnimation()
@@ -109,6 +109,7 @@ def GameLevel2(screen):
                 player.reset()
                 bot.is_paused = False
                 bot.reset()
+                arena.player_dead = False
                 
                 # Reset power manager
                 power_manager.reset()
@@ -208,6 +209,8 @@ def GameLevel2(screen):
                         print("Own goal detected, preparing immediate reset")
                         arena.pause_timer()  # Still pause timer briefly
                         play_sound('whistle')
+                        arena.player_power_bar.pause()
+                        arena.enemy_power_bar.pause()
                     
                     # Clear keys
                     keys_pressed.clear()
@@ -224,6 +227,7 @@ def GameLevel2(screen):
                 if bot.is_paused:
                     bot.resume()
                 bot.reset()
+                arena.player_dead = False
                 
                 # Reset powers
                 power_manager.reset()

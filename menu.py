@@ -27,7 +27,7 @@ class Menu:
             self.start_button_img = pygame.image.load("images/button/play_button.png").convert_alpha()
             self.retry_button_img = pygame.image.load("images/button/replay.png").convert_alpha()
             self.start_button_img = pygame.transform.scale(self.start_button_img, (200, 80))
-            self.retry_button_img = pygame.transform.scale(self.retry_button_img, (200, 80))
+            self.retry_button_img = pygame.transform.scale(self.retry_button_img, (200, 200))
             self.start_button_rect = self.start_button_img.get_rect(center=(WIDTH//2, HEIGHT//2 + 100))
             self.retry_button_rect = self.retry_button_img.get_rect(center=(WIDTH//2, HEIGHT//2 + 100))
         except:

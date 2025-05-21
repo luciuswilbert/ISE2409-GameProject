@@ -29,9 +29,9 @@ class Arena:
         if level == 1:
             self.background_img_raw = pygame.image.load("images/background/fire_animatiaon.gif")
             self.football_net_img = pygame.image.load("images/goal/lava_goal.png")
-            self.football_net_img = pygame.transform.scale(self.football_net_img, (90, 200))
-            self.left_net_rect = pygame.Rect(0, 350, 100, 250)     # Left side
-            self.right_net_rect = pygame.Rect(720, 350, 100, 250)  # Right side
+            self.football_net_img = pygame.transform.scale(self.football_net_img, (90, 190))
+            self.left_net_rect = pygame.Rect(0, 360, 100, 250)     # Left side
+            self.right_net_rect = pygame.Rect(720, 360, 100, 250)  # Right side
         else:
             self.background_img_raw = pygame.image.load("images/background/throne room.png")
             self.football_net_img = pygame.image.load("images/goal/throne_goal.png")
@@ -96,8 +96,6 @@ class Arena:
         if self.paused:
             self.paused = False
             self.total_paused_time += time.time() - self.pause_start_time
-            # self.player_power_bar.resume()
-            # self.enemy_power_bar.resume()
 
     def draw_timer(self, screen):
         """Draw the game timer with pause support"""
@@ -127,14 +125,17 @@ class Arena:
     def draw_score(self, screen):
         """Draw both player and enemy scores"""
         # Player score (left side)
-        score_surface = self.score_font.render(f"Character: {self.score}", True, (0, 0, 0))
+        score_surface = self.score_font.render(f"Player: {self.score}", True, (0, 0, 0))
         score_rect = score_surface.get_rect(topleft=(20, 20))
         bg_rect = pygame.Rect(score_rect.left - 5, score_rect.top - 5, score_rect.width + 10, score_rect.height + 10)
         pygame.draw.rect(screen, (255, 255, 255), bg_rect)
         screen.blit(score_surface, score_rect)
 
         # Enemy score (right side)
-        enemy_score_surface = self.score_font.render(f"Demon: {self.enemy_score}", True, (0, 0, 0))
+        if self.level == 1:
+            enemy_score_surface = self.score_font.render(f"Demon: {self.enemy_score}", True, (0, 0, 0))
+        else:
+            enemy_score_surface = self.score_font.render(f"Lucifer: {self.enemy_score}", True, (0, 0, 0))
         enemy_score_rect = enemy_score_surface.get_rect(topright=(780, 20))
         bg_enemy_rect = pygame.Rect(enemy_score_rect.left - 5, enemy_score_rect.top - 5, enemy_score_rect.width + 10, enemy_score_rect.height + 10)
         pygame.draw.rect(screen, (255, 255, 255), bg_enemy_rect)
@@ -246,15 +247,15 @@ class Arena:
                     print("Enemy used special power: Ground Fire!")
         else:
             # Enemy AI for using power
-            if (self.enemy_power_bar.is_full and 
-                not self.celebrating and 
-                not self.enemy_special_active and  
-                random.random() < 0.02):
+            # if (self.enemy_power_bar.is_full and not self.celebrating and not self.enemy_special_active and random.random() < 0.2):
+            if (self.enemy_power_bar.is_full and not self.celebrating and bot.current_action == "attack" and random.random() < 0.2):  # 2% chance per frame
                 
                 self.enemy_power_bar.use_power()
                 print("Enemy used special power!")
                 
-                if self.lucifer_skill_toggle == 0:
+                # if self.lucifer_skill_toggle == 0:
+                if random.random() < 0.5:
+                
                     # --- Explosion Skill ---
                     play_sound('bomb')
                     self.enemy_special_active = True
@@ -349,15 +350,15 @@ class Arena:
         # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect, 2)
         # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect, 2)
         
-        # Draw first rectangle (e.g., red, filled)
-        pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_top_bar, 2)
-        pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_side_bar, 2)
-        pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
-        pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
+        # # Draw first rectangle (e.g., red, filled)
+        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_top_bar, 2)
+        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_side_bar, 2)
+        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
+        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
 
-        # # Draw second rectangle (e.g., green, outlined)
-        pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
-        pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
+        # # # Draw second rectangle (e.g., green, outlined)
+        # pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
+        # pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
     
         self.draw_timer(screen)
         

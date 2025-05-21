@@ -22,7 +22,7 @@ def play_intro_scene(screen):
     # Load all run frames for exit animation
     lucifer_run_frames = [
         pygame.transform.scale(
-            pygame.image.load(f"images/bot_level_2/Run A-{str(i).zfill(2)}.png"), (150, 200)
+            pygame.image.load(f"images/bot_level_2/Run-{str(i).zfill(2)}.png"), (120, 135)
         )
         for i in range(1, 9)
     ]
@@ -33,14 +33,14 @@ def play_intro_scene(screen):
     # BotLevel2 Lucifer animation (enter, idle)
     lucifer = BotLevel2()
     lucifer.position_x = 900
-    lucifer.position_y = 400
+    lucifer.position_y = 350
     lucifer.current_action = "run"
     lucifer.set_animation()
     lucifer.is_flipped = True
 
     # Separate manual tracking for exiting phase
     lucifer_exit_x = 430
-    lucifer_exit_y = 400
+    lucifer_exit_y = 350
 
     clock = pygame.time.Clock()
     running = True
@@ -58,7 +58,7 @@ def play_intro_scene(screen):
 
         # PHASE LOGIC
         if phase == "start":
-            if current_time - phase_start_time >= 5:
+            if current_time - phase_start_time >= 1:
                 phase = "entering"
 
         elif phase == "entering":
@@ -66,16 +66,26 @@ def play_intro_scene(screen):
             if lucifer.position_x <= 430:
                 lucifer.position_x = 430
                 lucifer.current_action = "idle"
+                lucifer.stationary = True
                 lucifer.set_animation()
                 phase = "waiting"
                 phase_start_time = current_time
 
         elif phase == "waiting":
-            if current_time - phase_start_time > 1.5:
-                phase = "orb_gone"
+            if current_time - phase_start_time > 0.5:
+                lucifer.stationary = False
+                lucifer.current_action = "jump"
+                lucifer.set_animation()
                 phase_start_time = current_time
+                phase = "taking_orb"
 
-        elif phase == "orb_gone":
+        elif phase == "taking_orb":
+            if current_time - phase_start_time > 0.5:
+                phase = "orb_gone"
+                phase = "running_with_orb"
+                phase_start_time = current_time
+        
+        elif phase == "running_with_orb":
             if current_time - phase_start_time > 0.5:
                 lucifer.current_action = "run"
                 lucifer.set_animation()
@@ -109,7 +119,7 @@ def play_intro_scene(screen):
         # DRAW CHARACTER
         if phase == "exiting":
             current_frame = lucifer_run_frames[lucifer_run_frame_index]
-            screen.blit(current_frame, (lucifer_exit_x, lucifer_exit_y - 50))
+            screen.blit(current_frame, (lucifer_exit_x, lucifer_exit_y))
         elif phase != "start":
             lucifer.update()
             lucifer.draw(screen)

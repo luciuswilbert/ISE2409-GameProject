@@ -60,8 +60,8 @@ class BotLevel1:
         self.fire_duration = 3000 
         self.fire_frame_counter = 0
         self.fire_frame_delay = 5  # Adjust this to control particle spawn rate
-        self.fire_sound = pygame.mixer.Sound("audio/mixkit-fire-spell-with-explosion-1338.wav")
-        self.fire_sound_continuous = pygame.mixer.Sound("audio/fire-noise-159659.mp3")
+        self.fire_sound = pygame.mixer.Sound("sounds/mixkit-fire-spell-with-explosion-1338.wav")
+        self.fire_sound_continuous = pygame.mixer.Sound("sounds/fire-noise-159659.mp3")
         self.power_kick = False
         
         # Add paused state
@@ -93,29 +93,34 @@ class BotLevel1:
         if self.frame_counter >= self.frame_delay:
             self.frame_counter = 0
             self.frame_index = (self.frame_index + 1) % len(self.current_animation)
-
+        
         if self.is_jumping:
             if self.jump_height < 200:
                 self.jump_height += self.jump_speed
-                if self.jump_speed > 0:
-                    self.jump_speed -= 0.2
-                if self.is_jumping_over_ball:
-                    self.position_x += self.move_speed
+                self.jump_speed = max(0, self.jump_speed - 0.2)
+                print(f"Jumping: height={self.jump_height:.2f}, speed={self.jump_speed:.2f}")
             else:
+                # Apex reached
+                self.jump_height = 200
                 self.is_jumping = False
                 self.jump_speed = 10
-        else:
+                print("Reached jump apex")
+
+        # Fall if not grounded
+        if not self.is_grounded:
             if self.jump_height > 0:
                 self.jump_height -= self.fall_speed
-                if self.fall_speed < 10:
-                    self.fall_speed += 0.5 * gravity
-                if self.is_jumping_over_ball:
-                    self.position_x += self.move_speed
+                self.fall_speed = min(10, self.fall_speed + 0.5 * gravity)
+                if self.fall_speed < 0.2:
+                    self.fall_speed = 0.2
             else:
                 self.jump_height = 0
-                self.is_grounded = True
                 self.fall_speed = 0
+                self.is_grounded = True
+                self.is_jumping = False
                 self.is_jumping_over_ball = False
+                print("Landed")
+
 
         # Ensure the character stays within screen bounds
         self.position_x = max(0, min(WIDTH - 150, self.position_x)) 
@@ -125,33 +130,44 @@ class BotLevel1:
         offset_y = 50
         self.rect.x = self.position_x + offset_x
         self.rect.y = self.position_y - self.jump_height + offset_y
-
+        
+        # Prevent falling off-screen
+        if self.rect.bottom > GROUND_Y:
+            self.rect.bottom = GROUND_Y
+            self.jump_height = 0
+            self.fall_speed = 0
+            self.is_grounded = True
+            self.is_jumping = False
+            self.is_jumping_over_ball = False
+                        
+        if self.is_grounded:
+            if abs(self.move_speed) > 0 and self.current_action != "run":
+                self.current_action = "run"
+                self.set_animation()
+            elif self.move_speed == 0 and self.current_action != "idle":
+                self.current_action = "idle"
+                self.set_animation()
+    
     def set_animation(self):
-        if self.current_action == "idle":
+        previous_animation = self.current_animation
+
+        if not self.is_grounded:
+            self.current_animation = self.jump_animation
+        elif self.current_action == "idle":
             self.current_animation = self.idle_animation
         elif self.current_action == "run":
             self.current_animation = self.run_animation
         elif self.current_action == "kick":
             self.current_animation = self.kick_animation
-        elif self.current_action == "jump" and self.is_grounded:
+        elif self.current_action == "jump":
             self.current_animation = self.jump_animation
             self.is_jumping = True
             self.is_grounded = False
-        self.frame_index = 0
-        
-    # def draw(self, surface):
-    #     img = self.current_animation[self.frame_index]
-    #     draw_x = self.position_x 
-    #     draw_y = self.position_y - self.jump_height + 50
 
-    #     if self.is_flipped:
-    #         img = pygame.transform.flip(img, True, False)
+        # Reset frame index only if animation changed
+        if previous_animation != self.current_animation:
+            self.frame_index = 0
 
-    #     # Draw the character image
-    #     surface.blit(img, (draw_x, draw_y))
-
-    #     # Draw the bounding rectangle (use same width/height as image)
-    #     # pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
     
     def draw(self, surface):
         # Safety check for animation
@@ -185,7 +201,7 @@ class BotLevel1:
         
         # Draw collision box if debug mode is enabled
         if DEBUG_MODE:
-            pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)  # Red outline
+            # pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)  # Red outline
             font = pygame.font.Font(None, 20)
             text = font.render("Bot Hitbox", True, (255, 0, 0))
             surface.blit(text, (self.rect.x, self.rect.y - 20))
@@ -248,6 +264,7 @@ class BotLevel1:
         self.jump_height = 0
         self.is_grounded = True
         self.fall_speed = 0
+        self.jump_speed = 10 
         
         # Reset animation to idle and face left
         self.current_action = "idle"
@@ -304,7 +321,6 @@ class BotLevel1:
 
         if ball_rect.left == bot_rect.right and ball_rect.bottom > bot_rect.top:    
             self.is_flipped = False
-            self.is_jumping = True
             self.is_jumping_over_ball = True
 
             if self.current_action != "jump":
@@ -312,11 +328,11 @@ class BotLevel1:
                 self.set_animation()
     
         # Jump if the ball is above the bot and the bot is on the ground
-        if ball_rect.bottom - 10 < bot_rect.top and self.is_grounded and abs(ball_rect.centerx - bot_rect.centerx) < 50:
-            self.is_jumping = True
+        if ball_rect.bottom < bot_rect.top and self.is_grounded and abs(ball_rect.centerx - bot_rect.centerx) < 100:
             if self.current_action != "jump":
                 self.current_action = "jump"
                 self.set_animation()
+                
                     
     def trigger_full_ground_fire(self, screen, player):
  
@@ -352,31 +368,6 @@ class BotLevel1:
                             for i in range(num_particles_per_column):
                                 flame_color = random.choice([(255, 100, 0), (255, 150, 50), (255, 200, 100)])
                                 self.particles.append(SmokeParticle(x + random.randint(-5, 5), base_y, flame_color, "flame"))
-             
-            # if self.start_fire:          
-            #     if player.current_action != "dead": 
-            #         if player.current_action == "jump":
-            #             print("Jumping")
-            #             if player.is_grounded and player.jump_height == 0  and not player.is_jumping:
-            #                 player.current_action = "dead"
-            #             else:
-            #                 player.pending_death = True  # Wait to die when landed
-            #         else:
-            #             player.current_action = "dead"
-            #         player.set_animation(self)                    
-            #     player.update({}, self)
-
-            #     # Always update & draw particles
-            #     for p in self.particles[:]:
-            #         p.update()
-            #         p.draw(screen)
-            #         if p.life <= 0:
-            #             self.particles.remove(p)
-            # else:
-            #     if player.current_action != "idle":
-            #         player.current_action = "idle"
-            #         player.set_animation(self)
-            #     player.update({}, self)
             
             if self.start_fire:          
                 if player.current_action != "dead": 

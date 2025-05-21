@@ -48,7 +48,9 @@ class MainGame:
         # so we don't need to stop it here again
         if not self.menu.running:
             self.current_state = "PLAYING"
-            self.current_level = 1  # Always start at level 1
+            self.current_state = "LEVEL_2_TRANSITION"
+            # self.current_level = 1  # Reset level to 1 if needed
+            self.current_level = 2  # Always start at level 1
             
     def show_ready_start_transition(self):
         """Show 'Ready?' and 'Start!' captions before starting gameplay"""
@@ -228,11 +230,6 @@ class MainGame:
                         stop_sound('menu_sound')  # Stop sound when ESC is pressed
                         self.running = False
                         waiting = False
-                    # elif event.key == pygame.K_r:
-                    #     stop_sound('menu_sound')  # Stop sound when R is pressed
-                    #     self.current_state = "PLAYING"
-                    #     self.current_level = 1
-                    #     waiting = False
                     elif event.key == pygame.K_m:
                         stop_sound('menu_sound')  # Stop sound when M is pressed
                         self.current_state = "MENU"
@@ -248,14 +245,9 @@ class MainGame:
                 self.screen.fill((0, 0, 0))
             
             # Result text
-            text = font.render("TO BE CONTINUED", True, (255, 215, 0))
+            text = font.render("To Be Continued", True, (255, 215, 0))
             text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 3))
             self.screen.blit(text, text_rect)
-            
-            # Options
-            # retry_text = small_font.render("Press R to Retry", True, (255, 255, 255))
-            # retry_rect = retry_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-            # self.screen.blit(retry_text, retry_rect)
             
             menu_text = small_font.render("Press M for Main Menu", True, (255, 255, 255))
             menu_rect = menu_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
@@ -304,14 +296,13 @@ class MainGame:
         while self.running:
             if self.current_state == "MENU":
                 self.show_main_menu()
-                # Start menu and story intro
-                play_first_video(self.screen)
-                play_intro_scene(self.screen)
-                self.screen.fill((0, 0, 0))
-                pygame.display.flip()
-                pygame.time.delay(200)
-                self.show_ready_start_transition()
-
+                # # Start menu and story intro
+                # play_first_video(self.screen)
+                # play_intro_scene(self.screen)
+                # self.screen.fill((0, 0, 0))
+                # pygame.display.flip()
+                # pygame.time.delay(200)
+                # self.show_ready_start_transition()
             elif self.current_state == "LEVEL_2_TRANSITION":
                 self.level_2_transition()
             elif self.current_state == "PLAYING":
@@ -343,6 +334,8 @@ class MainGame:
         throne_room_scene(self.screen)
 
         throne_room_dialogue(self.screen)
+        
+        self.show_ready_start_transition()
         
         self.current_state = "PLAYING"
         

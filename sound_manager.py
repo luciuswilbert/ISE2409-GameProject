@@ -31,7 +31,9 @@ def initialize_sounds():
         'win': 'sounds/level_win.mp3',
         'retry': 'sounds/retry_page.wav',
         'bomb': 'sounds/bomb.mp3',
-        'meteor': 'sounds/nuke.mp3'
+        'meteor': 'sounds/nuke.mp3',
+        'hurt': 'sounds/ough-47202.mp3',
+        'dragon_growl': 'storyscene/dragon-growl-37570.mp3',
     }
     
     # Load each sound into the dictionary
@@ -68,7 +70,7 @@ def play_sound(sound_name, loop=False):
             print(f"Error playing sound: {sound_name}")
     return None
 
-def play_background_music(music_name='background'):
+def play_background_music(music_name):
     """Play background music in a loop"""
     global music_playing
     
