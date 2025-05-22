@@ -48,9 +48,7 @@ class MainGame:
         # so we don't need to stop it here again
         if not self.menu.running:
             self.current_state = "PLAYING"
-            self.current_state = "LEVEL_2_TRANSITION"
-            # self.current_level = 1  # Reset level to 1 if needed
-            self.current_level = 2  # Always start at level 1
+            self.current_level = 1  # Always start at level 1
             
     def show_ready_start_transition(self):
         """Show 'Ready?' and 'Start!' captions before starting gameplay"""
@@ -296,13 +294,13 @@ class MainGame:
         while self.running:
             if self.current_state == "MENU":
                 self.show_main_menu()
-                # # Start menu and story intro
-                # play_first_video(self.screen)
-                # play_intro_scene(self.screen)
-                # self.screen.fill((0, 0, 0))
-                # pygame.display.flip()
-                # pygame.time.delay(200)
-                # self.show_ready_start_transition()
+                # Start menu and story intro
+                play_first_video(self.screen)
+                play_intro_scene(self.screen)
+                self.screen.fill((0, 0, 0))
+                pygame.display.flip()
+                pygame.time.delay(200)
+                self.show_ready_start_transition()
             elif self.current_state == "LEVEL_2_TRANSITION":
                 self.level_2_transition()
             elif self.current_state == "PLAYING":
