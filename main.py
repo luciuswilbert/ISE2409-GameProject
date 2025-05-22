@@ -27,7 +27,7 @@ class MainGame:
         # Game state
         self.running = True
         self.current_state = "MENU"  # MENU, PLAYING, GAME_OVER
-        self.current_level = 2
+        self.current_level = 1
         self.max_levels = 2  # Currently have 2 levels
         
         # Create menu instance
@@ -187,23 +187,12 @@ class MainGame:
     def show_game_over(self, win):
         """Display game over screen - now using the Menu class for retry"""
         if not win:
-            # Play menu sound for retry menu
-            from sound_manager import play_sound
-
-            # Use the retry menu from Menu class
-            self.menu.running = True
-            self.menu.show_retry_menu()
-            
-            # If retry button clicked, restart the game
-            if not self.menu.running:
+            user_choice = self.menu.show_retry_menu()
+            if user_choice == 'retry_game':
                 self.current_state = "PLAYING"
-                # self.current_level = 1
         else:
-            # Show win screen (you could create a similar method in Menu class)
-            # self.show_win_screen()
-            # Story outro
-            throne_room_dialogue_after(self.screen)
-            # Show win screen (you could create a similar method in Menu class)
+            if self.current_level == 2:
+                throne_room_dialogue_after(self.screen)
             self.show_win_screen()
     
     def show_win_screen(self):
@@ -259,7 +248,7 @@ class MainGame:
     def play_level(self):
         """Play the current level with progression"""
         last_result = False  # Store result for game over screen
-        
+    
         # Play through levels in sequence until player loses or completes all levels
         while self.current_level <= self.max_levels and self.running:
             if self.current_level == 1:
@@ -268,7 +257,7 @@ class MainGame:
                 result = GameLevel2(self.screen)
             else:
                 break  # No more levels
-                1
+            
             last_result = result  # Store result for game over screen
             
             if result:  # If player won the level
@@ -278,16 +267,20 @@ class MainGame:
                     # Move to next level
                     self.current_level += 1
                     self.current_state = "LEVEL_2_TRANSITION"  # Transition to level 2
+                    return
                 else:
                     # Player beat the final level
                     break
             else:
                 # Player lost
                 break
-        
-        # Game over when all levels are complete or player lost
+                
         self.current_state = "GAME_OVER"
         self.show_game_over(last_result)
+        if self.current_state == "PLAYING":
+             self.show_ready_start_transition()
+        print("Current state after lost:", self.current_state)
+        print("Current level after lost:", self.current_level)
     
     def run(self):
         """Main game loop"""
@@ -301,9 +294,13 @@ class MainGame:
                 pygame.display.flip()
                 pygame.time.delay(200)
                 self.show_ready_start_transition()
+                print("Current state after main menu:", self.current_state)
+                print("Current level after main menu:", self.current_level)
             elif self.current_state == "LEVEL_2_TRANSITION":
                 self.level_2_transition()
             elif self.current_state == "PLAYING":
+                print("Playing level: ", self.current_level)
+                print("Self.running: ", self.running)
                 self.play_level()
             elif self.current_state == "GAME_OVER":
                 # This is handled in play_level

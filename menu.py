@@ -49,7 +49,11 @@ class Menu:
         """Run the main menu"""
         self.running = True  # Reset running state
         while self.running:
-            self.handle_events()
+            choice = self.handle_events_start_button()
+            if choice == "start_game":
+                self.running = False
+                return choice  # Return user's selection like "start_game"
+
             self.draw()
             self.clock.tick(FPS)
 
@@ -57,13 +61,40 @@ class Menu:
         """Show the retry menu after losing the game"""
         self.running = True  # Reset running state
         play_sound('retry')
+
         while self.running:
-            self.handle_events()
+            choice = self.handle_events_retry_button()
+            if choice == "retry_game":
+                return choice  # Return the user's selection
+
             self.draw_retry_menu()
             self.clock.tick(FPS)
         
-    def handle_events(self):
-        """Handle events for both main menu and retry menu"""
+    def handle_events_retry_button(self):
+        """Handle events for retry menu"""
+        mouse_pos = pygame.mouse.get_pos()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+                
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+                    
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left click
+                    if self.retry_button_rect.collidepoint(mouse_pos):
+                        print("Retry button clicked")
+                        # Stop the menu sound when retry button is clicked
+                        stop_sound('menu_sound')
+                        play_sound('start_button')
+                        return "retry_game"  # Return to retry the game
+                    
+    def handle_events_start_button(self):
+        """Handle events for main menu"""
         mouse_pos = pygame.mouse.get_pos()
         
         for event in pygame.event.get():
@@ -83,13 +114,7 @@ class Menu:
                         # Stop the menu sound when start button is clicked
                         stop_sound('menu_sound')
                         play_sound('start_button')
-                        self.running = False   # Exit menu and start game
-                    if self.retry_button_rect.collidepoint(mouse_pos):
-                        print("Retry button clicked")
-                        # Stop the menu sound when retry button is clicked
-                        stop_sound('menu_sound')
-                        play_sound('start_button')
-                        self.running = False
+                        return "start_game"  # Return to start the game
                         
     def draw(self):
         """Draw the main menu"""
