@@ -248,7 +248,7 @@ class Arena:
         else:
             # Enemy AI for using power
             # if (self.enemy_power_bar.is_full and not self.celebrating and not self.enemy_special_active and random.random() < 0.2):
-            if (self.enemy_power_bar.is_full and not self.celebrating and random.random() < 0.2):  # 2% chance per frame
+            if (self.enemy_power_bar.is_full and not self.celebrating and bot.current_action == "attack"):
                 
                 self.enemy_power_bar.use_power()
                 print("Enemy used special power!")

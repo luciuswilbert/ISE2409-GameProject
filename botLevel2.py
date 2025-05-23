@@ -43,7 +43,7 @@ class BotLevel2:
         self.is_flipped = True  # Track direction
         self.position_x = 570  # Initial x position
         self.position_y = GROUND_Y # initial vertical position
-        self.move_speed = 5  # Movement speed
+        self.move_speed = 4  # Movement speed
         self.rect = pygame.Rect(
             self.position_x + 50,              # offset_x
             self.position_y - self.jump_height,  # offset_y
