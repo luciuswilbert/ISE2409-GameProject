@@ -8,8 +8,6 @@ from explosion_effect import ExplosionEffect
 from meteor_effect import MeteorEffect
 from sound_manager import stop_sound
 
-
-
 class Arena:
     def __init__(self, level=1):
         self.explosion_effect = None
@@ -46,8 +44,6 @@ class Arena:
         for i in range(1, 11):  
             img = pygame.image.load(f"images/effectLevel2/Explosion_{i}.png").convert_alpha()
             self.explosion_frames.append(img)
-            print(f"Loaded {len(self.explosion_frames)} explosion frames.")
-
 
         self.left_net_rect_goal_area = pygame.Rect(30, 395, 50, 150)
         self.right_net_rect_goal_area = pygame.Rect(720, 395, 50, 150)
@@ -112,7 +108,6 @@ class Arena:
         screen.blit(timer_surface, timer_rect)
 
         if remaining <= 0 and not self.time_out:
-            print(" Time's up!")
             pygame.time.wait(100)
             self.time_out = True
             if self.score > self.enemy_score:
@@ -162,7 +157,6 @@ class Arena:
             # Demon scores if they last touched it
             if not self.ball_last_kicked_by_character:
                 self.enemy_score += 1
-                print(f"DEMON GOAL!  Last touched by demon. Score: Character {self.score}, Demon {self.enemy_score}")
                 self.celebrating = True
                 self.celebration_message = "DEMON Goal"
                 self.celebration_start_time = time.time()
@@ -177,7 +171,6 @@ class Arena:
                 return True
             else:
                 # Character put ball in own goal - no score
-                print("Character own goal - no score, just reset")
                 
                 # Always play whistle sound - use dedicated channel
                 try:
@@ -194,7 +187,6 @@ class Arena:
             # Character scores if they last touched it
             if self.ball_last_kicked_by_character:
                 self.score += 1
-                print(f"CHARACTER GOAL!  Last touched by character. Score: Character {self.score}, Demon {self.enemy_score}")
                 self.celebrating = True
                 self.celebration_message = "Goal!"
                 self.celebration_start_time = time.time()
@@ -209,7 +201,6 @@ class Arena:
                 return True
             else:
                 # Demon put ball in own goal - no score
-                print("Demon own goal - no score, just reset")
                 
                 # Always play whistle sound - use dedicated channel
                 try:
@@ -229,7 +220,6 @@ class Arena:
             elapsed = current_time - self.celebration_start_time
             
             if elapsed >= self.celebration_duration_sec:
-                print("Celebration ended!")
                 self.celebrating = False
                 
         # Update power bars
@@ -241,17 +231,13 @@ class Arena:
                 self.enemy_power_bar.use_power()
                 if random.random() < 0.5:
                     bot.start_power_kick()
-                    print("Enemy used special power: Power Kick!")
                 else:
                     bot.start_ground_fire()
-                    print("Enemy used special power: Ground Fire!")
         else:
             # Enemy AI for using power
-            # if (self.enemy_power_bar.is_full and not self.celebrating and not self.enemy_special_active and random.random() < 0.2):
             if (self.enemy_power_bar.is_full and not self.celebrating and bot.current_action == "attack"):
                 
                 self.enemy_power_bar.use_power()
-                print("Enemy used special power!")
                 
                 if self.lucifer_skill_toggle == 0:
                     # --- Explosion Skill ---
@@ -273,7 +259,11 @@ class Arena:
                         end_pos = (50, 500)  # almost bottom center of the goal net
                         self.meteor_effect = MeteorEffect(start_pos, end_pos, duration=50)
                         self.meteor_triggered = True
-                        self.meteor_carrying_ball = True  # <--- ADD THIS
+                        self.meteor_carrying_ball = True
+                        
+                        # Set that bot was the last to touch the ball when meteor starts
+                        ball.set_last_touched(False)  # False = bot touched it
+                        
                     self.lucifer_skill_toggle = 0  # Next skill will be explosion
             
             if self.enemy_special_active and self.explosion_effect:
@@ -282,7 +272,6 @@ class Arena:
                     stop_sound('bomb')
                     self.player_dead = True
                     self.player_dead_timer = 120  # 2 seconds at 60 FPS
-                    print("Player is dead!")
 
             if self.player_dead:
                 self.player_dead_timer -= 1
@@ -290,12 +279,11 @@ class Arena:
                     character.reset()
                     self.player_dead = False
                     self.enemy_special_active = False
-                    print("Player respawned!")
                     
             # Update meteor effect
             if self.meteor_effect:
                 self.meteor_effect.update()
-                    # === NEW: Make the ball follow the meteor while it's flying ===
+                # === NEW: Make the ball follow the meteor while it's flying ===
                 if self.meteor_carrying_ball:
                     t = min(1, self.meteor_effect.counter / self.meteor_effect.duration)
                     x = (1 - t) * self.meteor_effect.start_pos[0] + t * self.meteor_effect.end_pos[0]
@@ -312,9 +300,16 @@ class Arena:
                         # Place the ball at meteor's landing spot
                         ball.pos[0] = self.meteor_ball_x
                         ball.pos[1] = self.meteor_ball_y
+                        
+                        # Ensure bot is still marked as last to touch when meteor lands
+                        ball.set_last_touched(False)  # False = bot touched it
+                        
+                        # Give the ball some velocity towards the goal
+                        ball.vel[0] = -8  # Move towards left goal (player's goal)
+                        ball.vel[1] = 2   # Slight downward velocity
+                        
                         self.meteor_carrying_ball = False
                         self.meteor_ball_locked = False
-
 
     def draw_hint(self, screen, hint_text):
         """Draw the hint text for powers"""
@@ -330,7 +325,6 @@ class Arena:
             # Draw the hint text on the screen
             screen.blit(hint_surface, hint_rect)
 
-
     def draw(self, screen, ball, character, bot):
         """Draw all arena elements"""
         flipped_right_net = pygame.transform.flip(self.football_net_img, True, False)
@@ -345,19 +339,7 @@ class Arena:
         screen.blit(self.football_net_img, self.left_net_rect.topleft)  # Right net
         
         self.draw_score(screen)
-        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect, 2)
         
-        # # Draw first rectangle (e.g., red, filled)
-        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_top_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.left_net_rect_side_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_top_bar, 2)
-        # pygame.draw.rect(screen, (255, 0, 0), self.right_net_rect_side_bar, 2)
-
-        # # # Draw second rectangle (e.g., green, outlined)
-        # pygame.draw.rect(screen, (0, 255, 0), self.left_net_rect_goal_area, 2)
-        # pygame.draw.rect(screen, (0, 255, 0), self.right_net_rect_goal_area, 2)
-    
         self.draw_timer(screen)
         
         # Only draw the ball if the meteor is NOT active
@@ -377,10 +359,8 @@ class Arena:
         if self.enemy_special_active and self.explosion_effect:
             self.explosion_effect.draw(screen)
 
-
         # Draw celebration text
         if self.celebrating:
-            print("Celebration in progress!")
             font = pygame.font.SysFont(None, 100)
             goal_text = font.render(self.celebration_message, True, (255, 215, 0))  # Gold text
             screen.blit(goal_text, (400 - goal_text.get_width() // 2, 250))
@@ -398,20 +378,16 @@ class Arena:
             elif self.win is False:
                 result_text = result_font.render("You Lose!", True, (255, 0, 0))
             else:
-                result_text = result_font.render("Draw!", True, (255, 255, 0))
+                result_text = result_text = result_font.render("Draw!", True, (255, 255, 0))
 
             screen.blit(result_text, (400 - result_text.get_width() // 2, 250))
         
         # Draw power bars
         self.player_power_bar.draw(screen)
         self.enemy_power_bar.draw(screen)
-        
-        # Note: Bottom screen hint has been removed
-        # Hints are now only shown when the power bar is full
 
         if self.meteor_effect:
             self.meteor_effect.draw(screen)
-
         
         return self.win
         
