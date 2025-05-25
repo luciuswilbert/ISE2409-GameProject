@@ -24,4 +24,4 @@ gravity = 0.5
 TOTAL_TIME = 60  # seconds
 
 # Debug settings
-DEBUG_MODE = False  # Set to True to enable collision visualization
+DEBUG_MODE = False  # DISABLED: Set to False to disable collision visualization and debug prints
